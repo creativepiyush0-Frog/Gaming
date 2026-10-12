@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Second Chance: City of Secrets</title>
+<style>
+:root{--navy:#17233D;--navy2:#22325A;--blue:#3288E8;--cream:#FFF3DE;--coral:#FF6D76;--green:#4CBF91;--gold:#F5C451;--ink:#20283B;--muted:#5d6782;--fs:16px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:var(--fs)}
+body{background:var(--navy);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;height:100vh;height:100dvh;overflow:hidden;-webkit-tap-highlight-color:transparent}
+button{font:inherit;cursor:pointer;border:none;color:inherit;background:none}
+button:disabled{cursor:not-allowed}
+input{font:inherit}
+.hidden{display:none!important}
+#app{max-width:1180px;margin:0 auto;height:100%;display:flex;flex-direction:column;position:relative;background:var(--cream)}
+.screen{flex:1;display:flex;flex-direction:column;min-height:0}
+/* ---------- MENU ---------- */
+#menu{background:linear-gradient(180deg,#17233D 0%,#2B3F6E 70%,#3288E8 100%);color:#fff;align-items:center;justify-content:center;text-align:center;padding:20px;overflow:auto}
+#menu h1{font-size:clamp(1.8rem,6vw,3.2rem);letter-spacing:.04em;line-height:1.05}
+#menu h1 span{display:block;color:var(--gold);font-size:.55em;letter-spacing:.3em;margin-top:6px}
+.lineup{display:flex;justify-content:center;align-items:flex-end;gap:2px;height:170px;margin:18px 0 10px}
+.lineup svg{height:100%;width:auto;animation:idle 3s ease-in-out infinite}
+.lineup svg:nth-child(2n){animation-delay:-1.4s}
+.menu-btns{display:flex;flex-direction:column;gap:10px;width:min(320px,90%);margin-top:8px}
+.mbtn{background:var(--cream);color:var(--navy);font-weight:800;padding:13px;border-radius:14px;font-size:1.05rem;box-shadow:0 4px 0 #0004;transition:transform .1s}
+.mbtn:hover{transform:translateY(-2px)}.mbtn.primary{background:var(--coral);color:#fff}
+.mbtn:disabled{opacity:.45;transform:none}
+.tagline{opacity:.85;max-width:520px;font-size:.92rem}
+/* ---------- HUD ---------- */
+#hud{background:var(--navy);padding:6px 8px 7px;display:flex;flex-direction:column;gap:5px;color:#fff;flex:0 0 auto}
+.hrow{display:flex;gap:6px;align-items:stretch;flex-wrap:wrap}
+.card{background:var(--navy2);border-radius:10px;padding:4px 10px;display:flex;flex-direction:column;justify-content:center;line-height:1.15;min-width:78px}
+.card small{font-size:.6rem;letter-spacing:.08em;opacity:.75;font-weight:700}
+.card b{font-size:.95rem;white-space:nowrap}
+.card.cash b{color:var(--gold)}.card.bank b{color:#8fd3ff}.card.debt b{color:var(--coral)}
+.card.time{margin-left:auto}
+.card .sub{font-size:.62rem;opacity:.8;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--navy2);border-radius:999px;padding:3px 9px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.bar{width:44px;height:6px;background:#0006;border-radius:3px;overflow:hidden;display:inline-block}.bar i{display:block;height:100%;background:var(--green);transition:width .4s}
+.bar.low i{background:var(--coral)}
+.iconbtn{background:var(--navy2);border-radius:10px;padding:0 12px;font-size:1.1rem;color:#fff}
+.flash-up{animation:flashup .6s}
+@keyframes flashup{0%{transform:scale(1)}40%{transform:scale(1.15)}100%{transform:scale(1)}}
+/* ---------- MAIN ---------- */
+#main{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
+#scene{position:relative;flex:1 1 44%;min-height:160px;overflow:hidden;background:#9ED8FF}
+#scene .bg{position:absolute;inset:0;width:100%;height:100%}
+.cloud{animation:drift 40s linear infinite}
+@keyframes drift{from{transform:translateX(-120px)}to{transform:translateX(900px)}}
+.actor{position:absolute;bottom:3%;height:80%;transform:translateX(-50%);transition:left .4s;pointer-events:none}
+.actor svg{height:100%;width:auto;display:block;filter:drop-shadow(0 6px 3px #0003);animation:idle 3.2s ease-in-out infinite;transform-origin:bottom center}
+.actor.enter{animation:enter .55s cubic-bezier(.2,1.4,.4,1)}
+.actor.ex-angry svg{animation:shake .45s 2,idle 3.2s ease-in-out .9s infinite}
+.actor.ex-happy svg{animation:hop .5s 1,idle 3.2s ease-in-out .5s infinite}
+.actor.ex-sad svg{filter:drop-shadow(0 6px 3px #0003) saturate(.75)}
+.mouth-talk{animation:talk .22s infinite alternate;transform-origin:60px 81px}
+.nametag{position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:8px;white-space:nowrap}
+@keyframes idle{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-3px) scaleY(1.01)}}
+@keyframes enter{from{opacity:0;transform:translateX(-50%) translateY(40px)}to{opacity:1;transform:translateX(-50%)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px) rotate(-2deg)}75%{transform:translateX(6px) rotate(2deg)}}
+@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-16px)}}
+@keyframes talk{from{transform:scaleY(.4)}to{transform:scaleY(1.1)}}
+.loc-badge{position:absolute;top:8px;left:8px;background:#17233Dcc;color:#fff;padding:5px 11px;border-radius:10px;font-weight:800;font-size:.82rem;z-index:2}
+.loc-badge span{font-weight:600;opacity:.8;margin-left:6px}
+.scene-fx{position:absolute;inset:0;pointer-events:none;z-index:3}
+.burst{position:absolute;left:50%;top:35%;transform:translate(-50%,-50%);font-size:2.2rem;font-weight:900;color:var(--gold);text-shadow:0 3px 0 #17233D;animation:burst 1.1s forwards}
+@keyframes burst{0%{opacity:0;transform:translate(-50%,-30%) scale(.5)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-90%) scale(1)}}
+/* ---------- DIALOGUE ---------- */
+#dlg{flex:0 1 auto;max-height:58%;overflow:auto;background:var(--cream);border-top:4px solid var(--navy);padding:12px 14px 14px}
+.dlg-in{animation:fadein .3s}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.dhead{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.portrait{width:54px;height:54px;border-radius:50%;background:#fff;border:3px solid var(--navy);overflow:hidden;flex:0 0 auto}
+.portrait svg{width:100%;height:100%}
+.evtag{font-size:.68rem;font-weight:800;letter-spacing:.1em;color:var(--coral)}
+.speaker{font-weight:900;font-size:1.08rem;color:var(--navy)}
+.speaker small{font-weight:600;color:var(--muted);font-size:.75rem;margin-left:6px}
+.desc{color:var(--muted);font-size:.92rem;margin:4px 0 6px;font-style:italic}
+.say{font-size:1.06rem;line-height:1.45;margin-bottom:10px;background:#fff;border-radius:12px;padding:10px 12px;border:2px solid #17233D22}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.choice{display:flex;gap:10px;align-items:flex-start;text-align:left;padding:12px;border-radius:14px;font-weight:700;font-size:.98rem;color:#fff;box-shadow:0 4px 0 #0003;transition:transform .1s,filter .1s;min-height:64px}
+.choice:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.07)}
+.choice:active:not(:disabled){transform:translateY(2px);box-shadow:0 1px 0 #0003}
+.choice.a{background:var(--blue)}.choice.b{background:var(--coral)}
+.choice .k{background:#fff;color:var(--navy);border-radius:8px;min-width:28px;height:28px;display:grid;place-items:center;font-weight:900;flex:0 0 auto}
+.choice small{display:block;font-weight:600;opacity:.92;font-size:.76rem;margin-top:3px}
+.choice:disabled{background:#9aa1b3;box-shadow:none}
+.result{background:#fff;border-left:6px solid var(--gold);border-radius:12px;padding:10px 12px;margin-bottom:10px;font-size:1.02rem;line-height:1.45;animation:pop .35s}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.echip{font-size:.75rem;font-weight:800;padding:3px 9px;border-radius:999px;background:#e8ecf5}
+.echip.pos{background:#d9f3e8;color:#1d7a55}.echip.neg{background:#ffe1e3;color:#b3303a}.echip.gold{background:#fff0c7;color:#8a6200}.echip.info{background:#dde9fb;color:#1f5fae}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--navy);color:#fff;font-weight:800;padding:10px 16px;border-radius:12px;box-shadow:0 3px 0 #0004}
+.btn:hover:not(:disabled){filter:brightness(1.15)}
+.btn.alt{background:#fff;color:var(--navy);border:2px solid var(--navy);box-shadow:none}
+.btn.green{background:var(--green)}.btn.coral{background:var(--coral)}.btn.blue{background:var(--blue)}.btn.gold{background:var(--gold);color:var(--navy)}
+.btn.sm{padding:6px 10px;font-size:.82rem;border-radius:9px}
+.btn:disabled{background:#b8bdc9;color:#fff;box-shadow:none;border-color:transparent}
+.lochead{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.lochead b{font-size:1.1rem;color:var(--navy)}
+.objective{background:var(--navy);color:#fff;border-radius:10px;padding:7px 10px;font-size:.85rem;margin:8px 0;display:flex;gap:8px;align-items:center}
+.objective b{color:var(--gold)}
+.flashmsg{background:#fff;border-left:5px solid var(--blue);padding:7px 10px;border-radius:8px;font-size:.9rem;margin:6px 0}
+.people{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.pchip{display:flex;align-items:center;gap:7px;background:#fff;border:2px solid var(--navy);border-radius:999px;padding:3px 12px 3px 3px;font-weight:800;font-size:.86rem}
+.pchip .portrait{width:34px;height:34px;border-width:2px}
+.pchip:hover{background:#fff7e6}
+.acts{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px;margin-top:6px}
+.abtn{background:#fff;border:2px solid #17233D33;border-radius:12px;padding:8px 10px;text-align:left;transition:border-color .15s,transform .1s}
+.abtn:hover:not(:disabled){border-color:var(--blue);transform:translateY(-1px)}
+.abtn b{display:block;font-size:.9rem}
+.abtn small{display:block;color:var(--muted);font-size:.72rem;margin-top:2px}
+.abtn .why{color:#c0392b;font-weight:700}
+.abtn:disabled{opacity:.62;background:#f3efe7}
+.abtn.job{border-color:var(--gold)}
+/* ---------- SHEET ---------- */
+#sheet{position:absolute;inset:0;background:var(--cream);z-index:20;overflow:auto;animation:slideup .25s}
+@keyframes slideup{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.shead{position:sticky;top:0;background:var(--navy);color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;z-index:2}
+.shead h2{font-size:1.1rem;letter-spacing:.04em}
+.sbody{padding:12px 14px 20px}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tab{padding:6px 12px;border-radius:999px;background:#fff;border:2px solid var(--navy);font-weight:800;font-size:.82rem}
+.tab.on{background:var(--navy);color:#fff}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.box{background:#fff;border-radius:14px;padding:12px;border:2px solid #17233D1f}
+.box h3{font-size:1rem;color:var(--navy);margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.box p{font-size:.86rem;color:#3a4460;margin:3px 0}
+.box .meta{font-size:.76rem;color:var(--muted)}
+.box.locked{opacity:.6;background:#efe9de}
+.box.here{border-color:var(--blue);box-shadow:0 0 0 2px var(--blue) inset}
+.box.done{border-color:var(--green)}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.tag{font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:999px;background:#e8ecf5;color:var(--navy)}
+.tag.ok{background:#d9f3e8;color:#1d7a55}.tag.no{background:#ffe1e3;color:#b3303a}.tag.gold{background:#fff0c7;color:#8a6200}
+.locicon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-size:1.5rem;flex:0 0 auto}
+.obj{font-size:.85rem;margin:2px 0}.obj.ok{color:#1d7a55}.obj.ok::before{content:"✔ "}.obj.no::before{content:"○ "}
+.stage{display:flex;gap:3px;margin:6px 0}.stage i{flex:1;height:7px;border-radius:4px;background:#e2e5ee}.stage i.on{background:var(--coral)}
+.charcard{display:flex;gap:10px}
+.charcard .pic{width:84px;flex:0 0 auto;background:#f7efe0;border-radius:12px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;height:130px}
+.charcard .pic svg{height:125px;width:auto}
+.mood{font-size:.8rem;font-weight:700}
+.msg{background:#fff;border-radius:12px;padding:9px 12px;margin-bottom:8px;border-left:5px solid var(--blue)}
+.msg.unread{border-left-color:var(--coral)}
+.msg b{color:var(--navy)}.msg small{color:var(--muted);float:right}
+.amount{width:130px;padding:8px;border-radius:10px;border:2px solid var(--navy);margin-right:6px}
+.kv{display:flex;justify-content:space-between;font-size:.9rem;padding:3px 0;border-bottom:1px dashed #0001}
+.kv b{color:var(--navy)}
+.pos-t{color:#1d7a55;font-weight:800}.neg-t{color:#b3303a;font-weight:800}
+/* ---------- NAV ---------- */
+#nav{display:grid;grid-template-columns:repeat(7,1fr);background:var(--navy);padding:5px 4px calc(5px + env(safe-area-inset-bottom));gap:3px;flex:0 0 auto}
+.nb{display:flex;flex-direction:column;align-items:center;gap:1px;color:#c9d3ea;padding:6px 2px;border-radius:12px;font-size:.66rem;font-weight:800;letter-spacing:.05em;position:relative}
+.nb span{font-size:1.25rem;line-height:1}
+.nb:hover{background:#ffffff14}
+.nb.on{background:var(--gold);color:var(--navy)}
+.badge{position:absolute;top:2px;right:18%;background:var(--coral);color:#fff;border-radius:999px;font-size:.6rem;padding:0 5px;min-width:16px}
+/* ---------- TOASTS & MODAL ---------- */
+#toasts{position:fixed;top:92px;right:10px;z-index:100;display:flex;flex-direction:column;gap:6px;pointer-events:none;max-width:min(330px,80vw)}
+.toast{background:#fff;color:var(--ink);border-radius:10px;padding:7px 11px;font-size:.8rem;font-weight:800;box-shadow:0 6px 18px #0003;border-left:6px solid var(--blue);animation:tin .3s, tout .4s 2.8s forwards}
+.toast.pos{border-color:var(--green)}.toast.neg{border-color:var(--coral)}.toast.gold{border-color:var(--gold);background:#fffaf0}
+@keyframes tin{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes tout{to{opacity:0;transform:translateX(30px)}}
+#modal{position:fixed;inset:0;background:#0b1430b3;z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.mcard{background:var(--cream);border-radius:18px;max-width:520px;width:100%;max-height:90vh;overflow:auto;padding:18px;border:4px solid var(--navy);animation:pop .25s}
+.mcard h2{color:var(--navy);margin-bottom:8px}
+.mcard p,.mcard li{font-size:.92rem;line-height:1.45;margin-bottom:6px}
+.mcard ul{padding-left:18px}
+.mrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+/* ---------- ENDING ---------- */
+#ending{overflow:auto;background:linear-gradient(#17233D,#2B3F6E);color:#fff;padding:20px}
+.endcard{max-width:820px;margin:0 auto}
+.endcard h1{font-size:clamp(1.6rem,5vw,2.6rem);color:var(--gold)}
+.endcard .box{color:var(--ink);margin-top:12px}
+@media (max-width:640px){
+ .choices{grid-template-columns:1fr}
+ .card{min-width:0;padding:3px 8px}.card b{font-size:.82rem}
+ .card.time{margin-left:0}
+ .chip{font-size:.66rem;padding:2px 7px}.bar{width:30px}
+ #dlg{max-height:62%}
+ .nb{font-size:.56rem}.nb span{font-size:1.1rem}
+ .acts{grid-template-columns:1fr 1fr}
+ #toasts{top:auto;bottom:80px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+ <section id="menu" class="screen">
+  <h1>SECOND CHANCE<span>CITY OF SECRETS</span></h1>
+  <div class="lineup" id="lineup"></div>
+  <p class="tagline">Your father left you a bicycle, a box of receipts — and a ₹50,000 debt to a man named Kade. Work, love, investigate, and decide what kind of future you'll build.</p>
+  <div class="menu-btns">
+   <button class="mbtn primary" data-act="newGame">▶ New Game</button>
+   <button class="mbtn" data-act="continue" id="contBtn">⟳ Continue</button>
+   <button class="mbtn" data-act="settings">⚙ Settings</button>
+   <button class="mbtn" data-act="howto">❓ How to Play</button>
+  </div>
+ </section>
+ <section id="game" class="screen hidden">
+  <header id="hud"></header>
+  <main id="main">
+   <div id="scene"></div>
+   <div id="dlg"></div>
+   <div id="sheet" class="hidden"></div>
+  </main>
+  <nav id="nav">
+   <button class="nb" data-act="tab" data-arg="home"><span>🏠</span>HOME</button>
+   <button class="nb" data-act="tab" data-arg="city"><span>🗺️</span>CITY</button>
+   <button class="nb" data-act="tab" data-arg="phone"><span>📱</span>PHONE</button>
+   <button class="nb" data-act="tab" data-arg="jobs"><span>💼</span>JOBS</button>
+   <button class="nb" data-act="tab" data-arg="quests"><span>📜</span>QUESTS</button>
+   <button class="nb" data-act="tab" data-arg="rel"><span>💞</span>PEOPLE</button>
+   <button class="nb" data-act="tab" data-arg="inv"><span>🎒</span>ITEMS</button>
+  </nav>
+ </section>
+ <section id="ending" class="screen hidden"></section>
+</div>
+<div id="toasts" aria-live="polite"></div>
+<div id="modal" class="hidden"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   SECOND CHANCE: CITY OF SECRETS — single-file life sim
+   Modules: Util, Sound, Data (PEOPLE/ITEMS/LOCS/JOBS/BIZ/QUESTS/EVENTS),
+   Player, RelationshipManager, DecisionEngine, EventManager, EconomyManager,
+   CareerManager, BusinessManager, QuestManager, TimeManager, LocationManager,
+   InventoryManager, SaveManager, UIManager, Game
+   ===================================================================== */
+
+/* ---------------- Util ---------------- */
+const $=s=>document.querySelector(s);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const fmt=n=>'₹'+Math.round(Math.abs(n)).toLocaleString('en-IN');
+const per=h=>h<12?0:h<17?1:h<21?2:3;
+const PERIODS=['Morning','Afternoon','Evening','Night'];
+const PICON=['🌅','☀️','🌇','🌙'];
+const hm=h=>String(Math.min(24,h)).padStart(2,'0')+':00';
+const SAVE_KEY='secondchance_cos_save_v1',SET_KEY='secondchance_cos_settings';
+let S=null;
+const Settings={sound:true,text:'m',info:false};
+const P=()=>per(S.hour);
+const F=k=>S.flags[k];
+const has=i=>(S.inv[i]||0)>0;
+const Q=id=>!!S.quests[id];
+const hired=j=>!!(S.jobs[j]&&S.jobs[j].hired);
+const EVIDENCE=['ev_notice','ev_receipt','ev_letter','ev_photo','ev_manifest'];
+const evCount=()=>EVIDENCE.filter(has).length;
+const ROMANCE=['aanya','riya','meera','sana'];
+const STAGES=['Stranger','Acquaintance','Friend','Romantic Interest','Dating','Committed'];
+const today=k=>S.today.misc[k]||0;
+const bump=k=>{S.today.misc[k]=(S.today.misc[k]||0)+1};
+
+/* ---------------- Sound (Web Audio, generated) ---------------- */
+const Sound={ctx:null,
+ tone(f,d,type='sine',v=.06,delay=0,slide=0){ if(!Settings.sound)return; try{
+  this.ctx=this.ctx||new (window.AudioContext||window.webkitAudioContext)();
+  const c=this.ctx,o=c.createOscillator(),g=c.createGain(),t=c.currentTime+delay;
+  o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.linearRampToValueAtTime(f+slide,t+d);
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+.02);}catch(e){} },
+ click(){this.tone(620,.05,'triangle',.04)},
+ money(){this.tone(988,.08,'square',.03);this.tone(1318,.14,'square',.03,.07)},
+ quest(){[523,659,784,1046].forEach((f,i)=>this.tone(f,.16,'triangle',.05,i*.09))},
+ bad(){this.tone(300,.25,'sawtooth',.035,0,-140)},
+ travel(){this.tone(400,.18,'sine',.05,0,300)},
+ ach(){[784,988,1175,1568].forEach((f,i)=>this.tone(f,.2,'square',.025,i*.07))},
+ note(){this.tone(880,.08,'sine',.05);this.tone(660,.1,'sine',.04,.08)}
+};
+
+/* ---------------- Characters ---------------- */
+const PEOPLE={
+ player:{name:'You',role:'Protagonist, 21',look:{skin:'#B97A56',hair:'#1E1A2E',style:'spiky',top:'#3288E8',outfit:'hoodie',pants:'#2E3B55'}},
+ aanya:{name:'Aanya',role:'Bookstore assistant, 23',look:{skin:'#C68A62',hair:'#2B1A14',style:'braid',top:'#E2A93B',outfit:'cardigan',pants:'#5A4A7A',acc:'glasses'}},
+ riya:{name:'Riya',role:'Café barista & singer, 22',look:{skin:'#D9A07A',hair:'#9B1B30',style:'ponytail',top:'#FF6D76',outfit:'apron',pants:'#2E3B55',acc:'earrings'}},
+ meera:{name:'Meera',role:'Product lead, Brightloop, 25',look:{skin:'#A86F4C',hair:'#151018',style:'bob',top:'#22325A',outfit:'blazer',pants:'#3A3F55',acc:'watch'}},
+ sana:{name:'Sana',role:'Street photographer, 24',look:{skin:'#E0B08C',hair:'#4A2E1E',style:'wavy',top:'#4CBF91',outfit:'jacket',pants:'#5B4636',acc:'beanie camera'}},
+ mom:{name:'Mom (Lata)',role:'Your mother',look:{skin:'#B97A56',hair:'#5a5a66',style:'bun',top:'#8E5BD0',outfit:'shawl',pants:'#6B3FA0'}},
+ kade:{name:'Mr. Kade',role:'Debt collector, KD Finance',look:{skin:'#8E5B3E',hair:'#111',style:'bald',top:'#22252E',outfit:'suit',pants:'#1a1c22',acc:'shades'}},
+ rosa:{name:"Rosa D'Souza",role:'Café owner',look:{skin:'#D7A47F',hair:'#a0a0ab',style:'bun',top:'#4CBF91',outfit:'apron',pants:'#6d4c41',acc:'glasses'}},
+ hari:{name:'Hari',role:'Delivery supervisor',look:{skin:'#9C6644',hair:'#222',style:'cap',top:'#F5C451',outfit:'vest',pants:'#2E3B55',acc:'mustache'}},
+ gopal:{name:'Gopal',role:'Shopkeeper, Lantern Market',look:{skin:'#A47148',hair:'#ddd',style:'short',top:'#3d9970',outfit:'kurta',pants:'#efe6d6',acc:'mustache'}},
+ kamala:{name:'Auntie Kamala',role:'Your neighbor',look:{skin:'#B5835A',hair:'#cfcfd6',style:'bun',top:'#FF9F1C',outfit:'shawl',pants:'#d1495b'}},
+ farah:{name:'Farah Qureshi',role:'Financial-crimes investigator',look:{skin:'#C9956B',hair:'#3a3448',style:'scarf',top:'#8D6E63',outfit:'trench',pants:'#3a3a48'}},
+ iyer:{name:'Mr. Iyer',role:'Business mentor',look:{skin:'#8D5A3B',hair:'#e8e8e8',style:'short',top:'#5C6BC0',outfit:'blazer',pants:'#3a3f55',acc:'glasses'}},
+ neha:{name:'Neha Batra',role:'Recruiter, TalentLink',look:{skin:'#C48A66',hair:'#3b2418',style:'bob',top:'#3288E8',outfit:'blazer',pants:'#2E3B55',acc:'earrings'}}
+};
+
+/* Parametric original cartoon character in SVG. ex: neutral|happy|talk|confused|sad|angry */
+function svgChar(id,ex='neutral',vb='0 0 120 220'){
+ const L=(PEOPLE[id]||PEOPLE.player).look,sk=L.skin,hr=L.hair,acc=L.acc||'',O='#20283B';
+ let back='',front='';
+ switch(L.style){
+  case 'braid':back=`<path d="M31 62Q30 24 60 24Q90 24 89 62L90 96Q60 102 30 96Z" fill="${hr}"/><path d="M86 84q12 24 4 52" stroke="${hr}" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="7 2"/><circle cx="90" cy="138" r="4" fill="#FF6D76"/>`;front=`<path d="M31 60Q33 27 60 27Q87 27 89 58Q80 42 60 41Q44 41 31 60Z" fill="${hr}"/>`;break;
+  case 'ponytail':back=`<path d="M82 32q34 4 26 58q-6-22-22-28z" fill="${hr}"/>`;front=`<path d="M31 62Q30 26 60 26Q90 26 89 60Q86 44 74 40Q64 50 44 46Q36 50 31 62Z" fill="${hr}"/><rect x="80" y="31" width="10" height="8" rx="3" fill="#F5C451"/>`;break;
+  case 'bob':back=`<path d="M28 60Q28 24 60 24Q92 24 92 60L92 88Q84 94 80 86L40 86Q36 94 28 88Z" fill="${hr}"/>`;front=`<path d="M30 62Q32 26 60 26Q88 26 90 62Q86 46 62 40Q58 54 30 62Z" fill="${hr}"/>`;break;
+  case 'wavy':back=`<path d="M28 60Q26 26 60 26Q94 26 92 60Q99 80 90 100Q97 113 84 117L36 117Q23 113 30 100Q21 80 28 60Z" fill="${hr}"/>`;front=`<path d="M31 60Q34 34 60 34Q86 34 89 60Q80 46 60 46Q40 46 31 60Z" fill="${hr}"/>`;break;
+  case 'spiky':front=`<path d="M30 60Q28 30 46 28L50 17L58 27L66 15L72 28L83 21L84 34Q93 44 90 60Q84 44 70 42Q56 48 42 44Q34 48 30 60Z" fill="${hr}"/>`;break;
+  case 'short':front=`<path d="M31 58Q30 28 60 28Q90 28 89 58Q84 40 60 40Q38 40 31 58Z" fill="${hr}"/>`;break;
+  case 'bun':back=`<circle cx="60" cy="27" r="13" fill="${hr}"/>`;front=`<path d="M31 62Q30 31 60 31Q90 31 89 62Q84 44 60 42Q36 44 31 62Z" fill="${hr}"/>`;break;
+  case 'bald':front=`<path d="M36 46Q44 34 60 33" stroke="#fff5" stroke-width="3" fill="none" stroke-linecap="round"/>`;break;
+  case 'cap':front=`<path d="M30 54Q30 25 60 25Q90 25 90 54Z" fill="#FF6D76" stroke="${O}" stroke-width="2"/><path d="M62 52L102 54Q102 61 88 61L62 58Z" fill="#E0505A" stroke="${O}" stroke-width="2"/><text x="53" y="46" font-size="11" fill="#fff" font-weight="900" font-family="sans-serif">S</text>`;break;
+  case 'scarf':back=`<path d="M23 66Q23 19 60 19Q97 19 97 66L101 116Q60 128 19 116Z" fill="${hr}"/>`;front=`<path d="M27 66Q27 23 60 23Q93 23 93 66Q89 40 60 38Q31 40 27 66Z" fill="${hr}"/>`;break;
+ }
+ const eyes=ex==='happy'?`<path d="M44 66Q49 59 54 66M66 66Q71 59 76 66" stroke="${O}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+  :ex==='sad'?`<ellipse cx="49" cy="67" rx="3" ry="3.4" fill="${O}"/><ellipse cx="71" cy="67" rx="3" ry="3.4" fill="${O}"/><path d="M75 71q2 6 0 9" stroke="#6EC6FF" stroke-width="2.5" fill="none" stroke-linecap="round"/>`
+  :`<ellipse cx="49" cy="65" rx="3.4" ry="4.4" fill="${O}"/><ellipse cx="71" cy="65" rx="3.4" ry="4.4" fill="${O}"/><circle cx="50.3" cy="63.4" r="1.2" fill="#fff"/><circle cx="72.3" cy="63.4" r="1.2" fill="#fff"/>`;
+ const brows={angry:'M43 53L55 58M65 58L77 53',sad:'M43 57L55 53M65 53L77 57',confused:'M43 56L55 55M65 50L77 53',happy:'M43 54Q49 51 55 54M65 54Q71 51 77 54'}[ex]||'M43 56L55 55M65 55L77 56';
+ const mouth={happy:`<path d="M50 78Q60 92 70 78Z" fill="#8A2D3B" stroke="${O}" stroke-width="2" stroke-linejoin="round"/>`,
+  talk:`<ellipse class="mouth-talk" cx="60" cy="81" rx="6" ry="4.5" fill="#8A2D3B" stroke="${O}" stroke-width="2"/>`,
+  sad:`<path d="M51 85Q60 77 69 85" stroke="${O}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+  angry:`<path d="M51 84Q60 80 69 84" stroke="${O}" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+  confused:`<path d="M51 83q4.5-4 9 0t9 0" stroke="${O}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`}[ex]||`<path d="M52 80Q60 85 68 80" stroke="${O}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`;
+ const cheeks=ex==='happy'||ex==='talk'?`<circle cx="42" cy="75" r="4.5" fill="#FF6D76" opacity=".35"/><circle cx="78" cy="75" r="4.5" fill="#FF6D76" opacity=".35"/>`:ex==='angry'?`<ellipse cx="60" cy="70" rx="24" ry="12" fill="#ff3b3b" opacity=".15"/>`:'';
+ let a='';
+ if(acc.includes('glasses'))a+=`<g stroke="${O}" stroke-width="2" fill="#ffffff33"><circle cx="49" cy="65" r="8"/><circle cx="71" cy="65" r="8"/><path d="M57 65h6"/></g>`;
+ if(acc.includes('shades'))a+=`<g fill="#111"><rect x="39" y="59" width="18" height="11" rx="4"/><rect x="63" y="59" width="18" height="11" rx="4"/><rect x="56" y="62" width="8" height="3"/></g>`;
+ if(acc.includes('mustache'))a+=`<path d="M48 76Q54 71 60 75Q66 71 72 76Q66 79 60 77Q54 79 48 76Z" fill="#2a1d18"/>`;
+ if(acc.includes('beanie'))a+=`<path d="M29 54Q29 20 60 20Q91 20 91 54Z" fill="#FF6D76" stroke="${O}" stroke-width="2"/><rect x="27" y="49" width="66" height="9" rx="4" fill="#E0505A" stroke="${O}" stroke-width="2"/><circle cx="60" cy="18" r="5" fill="#FFF3DE"/>`;
+ if(acc.includes('earrings'))a+=`<circle cx="32" cy="78" r="3" fill="#F5C451"/><circle cx="88" cy="78" r="3" fill="#F5C451"/>`;
+ // outfits
+ const top=L.top,pants=L.pants||'#2E3B55';
+ let o='';
+ switch(L.outfit){
+  case 'hoodie':o=`<path d="M46 96Q60 108 74 96" stroke="#ffffff88" stroke-width="3" fill="none"/><path d="M54 104v14M66 104v14" stroke="#fff" stroke-width="2"/><rect x="44" y="140" width="32" height="16" rx="6" fill="#0002"/>`;break;
+  case 'cardigan':o=`<path d="M50 94L60 128L70 94Z" fill="#FFF3DE"/><circle cx="60" cy="138" r="2.2" fill="${O}"/><circle cx="60" cy="150" r="2.2" fill="${O}"/>`;break;
+  case 'apron':o=`<path d="M42 116h36v54H42z" fill="${L.outfit==='apron'&&id==='rosa'?'#FFF3DE':'#FFF3DE'}" stroke="${O}" stroke-width="1.5"/><path d="M46 116L40 98M74 116L80 98" stroke="#FFF3DE" stroke-width="3"/><rect x="52" y="130" width="16" height="10" rx="3" fill="${top}" opacity=".6"/>`;break;
+  case 'blazer':o=`<path d="M50 94L60 130L70 94Z" fill="#fff"/><path d="M50 94L56 120L46 110ZM70 94L64 120L74 110Z" fill="#0003"/>`;break;
+  case 'jacket':o=`<path d="M60 96V170" stroke="#20283B" stroke-width="2"/><rect x="40" y="130" width="12" height="10" rx="3" fill="#0002"/><rect x="68" y="130" width="12" height="10" rx="3" fill="#0002"/>`;break;
+  case 'suit':o=`<path d="M50 94L60 130L70 94Z" fill="#fff"/><path d="M57 98h6l-1 26-2 4-2-4z" fill="#C0392B"/>`;break;
+  case 'shawl':o=`<path d="M30 104L90 150L90 166L28 120Z" fill="${pants}" opacity=".9"/>`;break;
+  case 'vest':o=`<rect x="34" y="128" width="52" height="6" fill="#fff" opacity=".85"/><rect x="34" y="146" width="52" height="6" fill="#fff" opacity=".85"/>`;break;
+  case 'kurta':o=`<path d="M60 94v34" stroke="#fff" stroke-width="2"/><circle cx="60" cy="104" r="1.8" fill="#fff"/><circle cx="60" cy="114" r="1.8" fill="#fff"/>`;break;
+  case 'trench':o=`<path d="M50 94L60 120L70 94Z" fill="#F5E6CC"/><rect x="28" y="140" width="64" height="7" fill="#5D4037"/><rect x="56" y="139" width="8" height="9" fill="#F5C451"/>`;break;
+ }
+ if(acc.includes('camera'))o+=`<path d="M40 96L60 130L80 96" stroke="#20283B" stroke-width="2" fill="none"/><rect x="48" y="124" width="24" height="16" rx="3" fill="#20283B"/><circle cx="60" cy="132" r="5" fill="#3288E8" stroke="#fff" stroke-width="1.5"/>`;
+ const watch=acc.includes('watch')?`<rect x="95" y="152" width="9" height="6" rx="2" fill="#F5C451"/>`:'';
+ const armR=ex==='happy'?'rotate(-150 95 104)':ex==='confused'?'rotate(-125 95 104)':'rotate(-8 95 104)';
+ const handR=ex==='happy'?'<circle cx="96" cy="48" r="7"':ex==='confused'?'<circle cx="74" cy="66" r="7"':'<circle cx="101" cy="161" r="7"';
+ return `<svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" aria-label="${(PEOPLE[id]||PEOPLE.player).name}">
+ ${back}
+ <rect x="40" y="166" width="17" height="40" rx="6" fill="${pants}" stroke="${O}" stroke-width="2"/><rect x="63" y="166" width="17" height="40" rx="6" fill="${pants}" stroke="${O}" stroke-width="2"/>
+ <ellipse cx="47" cy="208" rx="12" ry="6" fill="${O}"/><ellipse cx="73" cy="208" rx="12" ry="6" fill="${O}"/>
+ <rect x="18" y="102" width="15" height="58" rx="7" fill="${top}" stroke="${O}" stroke-width="2" transform="rotate(8 25 104)"/>
+ <circle cx="19" cy="161" r="7" fill="${sk}" stroke="${O}" stroke-width="2"/>
+ <path d="M30 104Q32 92 60 92Q88 92 90 104L94 172Q60 178 26 172Z" fill="${top}" stroke="${O}" stroke-width="2"/>
+ ${o}
+ <rect x="87" y="102" width="15" height="58" rx="7" fill="${top}" stroke="${O}" stroke-width="2" transform="${armR}"/>
+ ${handR} fill="${sk}" stroke="${O}" stroke-width="2"/>${ex==='happy'||ex==='confused'?'':watch}
+ <rect x="53" y="84" width="14" height="12" fill="${sk}"/>
+ <ellipse cx="32" cy="67" rx="5" ry="7" fill="${sk}" stroke="${O}" stroke-width="2"/><ellipse cx="88" cy="67" rx="5" ry="7" fill="${sk}" stroke="${O}" stroke-width="2"/>
+ <ellipse cx="60" cy="64" rx="28" ry="30" fill="${sk}" stroke="${O}" stroke-width="2"/>
+ ${cheeks}${eyes}<path d="${brows}" stroke="${O}" stroke-width="3" fill="none" stroke-linecap="round"/>
+ <path d="M60 68q-3 6 1 8" stroke="#0004" stroke-width="2" fill="none"/>${mouth}${front}${a}
+</svg>`;
+}
+const portrait=(id,ex='neutral')=>`<div class="portrait">${svgChar(id,ex,'22 14 76 76')}</div>`;
+
+/* ---------------- Locations & scenes ---------------- */
+const LOCS={
+ home:{n:'Family Home',i:'🏠',c:'#FFB47A',d:'A modest house on Jasmine Lane. Dad\'s desk, Dad\'s bicycle, Mom\'s endless tea.',open:[0,24]},
+ cafe:{n:'Brew & Banter Café',i:'☕',c:'#FF9AA0',d:'Neighborhood café run by Rosa. Busy mornings, mellow evenings.',open:[7,22]},
+ bookstore:{n:'Inkwell Books',i:'📚',c:'#9FD8B8',d:'Creaky shelves, poetry corner, and a cat named Footnote.',open:[8,21]},
+ park:{n:'Banyan Park',i:'🌳',c:'#8FD694',d:'Joggers at dawn, musicians at dusk, murals on the old wall.',open:[0,24]},
+ market:{n:'Lantern Market',i:'🛒',c:'#F5C451',d:'Stalls, gifts, and Hari\'s delivery bikes lined up by the gate.',open:[7,22]},
+ workplace:{n:'SwiftLine Depot',i:'🚚',c:'#B0BEC5',d:'A busy logistics depot. Dad used to pick up parcels here.',open:[7,21],lock:'Reach 4 Delivery XP',un:()=>(S.jobs.delivery&&S.jobs.delivery.xp>=4)},
+ gym:{n:'Iron Pulse Gym',i:'🏋️',c:'#C5B3F5',d:'Cheap, loud, and surprisingly friendly.',open:[6,23],lock:'Earn your first ₹1,000',un:()=>S.earned>=1000},
+ community:{n:'Community Center',i:'🏛️',c:'#8FC7FF',d:'Courses, clubs, and the Saturday community night.',open:[8,22],lock:'Meet your neighbor',un:()=>!!F('met_kamala')},
+ business:{n:'Business District',i:'🏙️',c:'#A0B4D8',d:'Glass towers, startups, and the offices of KD Finance.',open:[8,20],lock:'Complete "Build Your Skills" or gain an ally',un:()=>Q('q4')||!!F('farah_ally')}
+};
+const NPC_AT={home:'mom',cafe:'rosa',market:'hari',community:'kamala',business:'iyer',workplace:'hari',bookstore:null,park:null,gym:null};
+
+function sceneSVG(loc,p){
+ const sky=[['#8ED0FF','#E6F6FF'],['#5FB4F0','#CDEBFF'],['#F2876A','#6B5BA8'],['#0E1730','#2A3A66']][p];
+ const win=p>=2?'#FFE08A':'#BFE3FF',night=p===3;
+ let s=`<svg class="bg" viewBox="0 0 800 400" preserveAspectRatio="xMidYMax slice"><defs><linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/></linearGradient></defs><rect width="800" height="400" fill="url(#skyg)"/>`;
+ if(night){s+=`<circle cx="680" cy="70" r="26" fill="#FFF3DE"/><circle cx="692" cy="62" r="22" fill="${sky[0]}"/>`;for(let i=0;i<24;i++)s+=`<circle cx="${(i*137)%800}" cy="${(i*53)%160+10}" r="${i%3?1.2:2}" fill="#fff" opacity=".8"/>`;}
+ else s+=`<circle cx="${[120,420,640][p]}" cy="${[90,60,130][p]}" r="34" fill="#F5C451" opacity=".95"/>`;
+ if(!night)s+=`<g class="cloud" fill="#fff" opacity=".8"><ellipse cx="80" cy="80" rx="46" ry="16"/><ellipse cx="110" cy="70" rx="30" ry="16"/></g><g class="cloud" style="animation-delay:-20s" fill="#fff" opacity=".7"><ellipse cx="60" cy="130" rx="38" ry="12"/></g>`;
+ const sk=night?'#1B2950':'#A9BEDD';
+ s+=`<g fill="${sk}" opacity=".75"><rect x="0" y="190" width="70" height="150"/><rect x="80" y="150" width="50" height="190"/><rect x="140" y="210" width="80" height="130"/><rect x="600" y="170" width="60" height="170"/><rect x="670" y="130" width="50" height="210"/><rect x="730" y="200" width="70" height="140"/></g>`;
+ s+=`<rect y="330" width="800" height="70" fill="${loc==='park'?'#4CBF91':'#D8C9AE'}"/><rect y="330" width="800" height="5" fill="#0002"/>`;
+ const B={
+  home:`<rect x="440" y="180" width="270" height="152" fill="#FFF3DE" stroke="#20283B" stroke-width="3"/><polygon points="425,184 575,100 725,184" fill="#FF6D76" stroke="#20283B" stroke-width="3"/><rect x="545" y="245" width="44" height="87" fill="#8D5A3B" stroke="#20283B" stroke-width="3"/><rect x="465" y="215" width="54" height="44" fill="${win}" stroke="#20283B" stroke-width="3"/><rect x="618" y="215" width="54" height="44" fill="${win}" stroke="#20283B" stroke-width="3"/><g stroke="#20283B" stroke-width="4" fill="none"><circle cx="300" cy="318" r="16"/><circle cx="360" cy="318" r="16"/><path d="M300 318l20-26h30l10 26M320 292l-6-10"/></g><rect x="150" y="300" width="80" height="32" fill="#4CBF91"/>`,
+  cafe:`<rect x="380" y="170" width="360" height="162" fill="#3288E8" stroke="#20283B" stroke-width="3"/><g>${[0,1,2,3,4,5,6,7,8].map(i=>`<rect x="${380+i*40}" y="160" width="40" height="30" fill="${i%2?'#FFF3DE':'#FF6D76'}"/>`).join('')}</g><path d="M380 190h360" stroke="#20283B" stroke-width="3"/><rect x="410" y="210" width="130" height="80" fill="${win}" stroke="#20283B" stroke-width="3"/><rect x="580" y="230" width="50" height="102" fill="#17233D"/><text x="560" y="152" font-size="26" font-weight="900" fill="#17233D" font-family="sans-serif" text-anchor="middle">BREW &amp; BANTER</text><g fill="#FFF3DE" stroke="#20283B" stroke-width="2"><rect x="200" y="290" width="70" height="8"/><rect x="232" y="298" width="6" height="34"/></g><text x="222" y="285" font-size="22">☕</text>`,
+  bookstore:`<rect x="390" y="160" width="330" height="172" fill="#2E7D5B" stroke="#20283B" stroke-width="3"/><rect x="410" y="200" width="170" height="100" fill="#FFF3DE" stroke="#20283B" stroke-width="3"/>${[0,1,2,3,4,5,6,7,8,9,10,11].map(i=>`<rect x="${416+i*13}" y="${i%3?212:208}" width="11" height="${i%3?36:40}" fill="${['#FF6D76','#3288E8','#F5C451','#9B5DE5'][i%4]}"/><rect x="${416+i*13}" y="${i%2?256:252}" width="11" height="${i%2?38:42}" fill="${['#4CBF91','#FF9F1C','#3288E8','#FF6D76'][i%4]}"/>`).join('')}<rect x="610" y="220" width="56" height="112" fill="#8D5A3B" stroke="#20283B" stroke-width="3"/><rect x="430" y="168" width="260" height="26" rx="6" fill="#F5C451"/><text x="560" y="188" font-size="18" font-weight="900" text-anchor="middle" fill="#17233D" font-family="sans-serif">INKWELL BOOKS</text>`,
+  park:`${[[120,230],[300,210],[560,220],[720,240]].map(([x,y])=>`<rect x="${x-8}" y="${y}" width="16" height="${330-y}" fill="#8D5A3B"/><circle cx="${x}" cy="${y-20}" r="52" fill="#3FA97C"/><circle cx="${x+30}" cy="${y}" r="34" fill="#4CBF91"/>`).join('')}<rect x="400" y="300" width="110" height="10" fill="#8D5A3B" stroke="#20283B" stroke-width="2"/><rect x="408" y="310" width="8" height="22" fill="#20283B"/><rect x="494" y="310" width="8" height="22" fill="#20283B"/><rect x="640" y="260" width="120" height="70" fill="#E8D5B7" stroke="#20283B" stroke-width="2"/><circle cx="672" cy="292" r="16" fill="#FF6D76"/><path d="M700 280l30 34h-40z" fill="#3288E8"/>`,
+  market:`${[0,1,2,3].map(i=>`<g transform="translate(${180+i*150} 0)"><rect x="0" y="230" width="120" height="102" fill="#FFF3DE" stroke="#20283B" stroke-width="3"/><polygon points="-10,232 60,186 130,232" fill="${['#FF6D76','#3288E8','#F5C451','#4CBF91'][i]}" stroke="#20283B" stroke-width="3"/><circle cx="30" cy="270" r="9" fill="#FF6D76"/><circle cx="50" cy="270" r="9" fill="#F5C451"/><circle cx="40" cy="256" r="9" fill="#4CBF91"/><rect x="70" y="252" width="34" height="26" fill="#8D5A3B"/></g>`).join('')}<g stroke="#F5C451" stroke-width="2">${[0,1,2,3,4,5,6].map(i=>`<line x1="${150+i*100}" y1="150" x2="${150+i*100}" y2="166"/><circle cx="${150+i*100}" cy="172" r="8" fill="#FF6D76"/>`).join('')}</g>`,
+  workplace:`<rect x="330" y="150" width="420" height="182" fill="#90A4AE" stroke="#20283B" stroke-width="3"/><rect x="370" y="200" width="150" height="132" fill="#607D8B" stroke="#20283B" stroke-width="3"/>${[0,1,2,3,4,5].map(i=>`<line x1="370" x2="520" y1="${215+i*20}" y2="${215+i*20}" stroke="#20283B" stroke-width="2"/>`).join('')}<rect x="345" y="160" width="260" height="30" fill="#F5C451"/><text x="475" y="182" font-size="20" font-weight="900" text-anchor="middle" fill="#17233D" font-family="sans-serif">SWIFTLINE DEPOT</text><g transform="translate(560 250)"><rect width="120" height="62" fill="#FF6D76" stroke="#20283B" stroke-width="3"/><rect x="120" y="20" width="44" height="42" fill="#3288E8" stroke="#20283B" stroke-width="3"/><circle cx="30" cy="68" r="14" fill="#20283B"/><circle cx="135" cy="68" r="14" fill="#20283B"/></g>`,
+  gym:`<rect x="380" y="160" width="350" height="172" fill="#3A3F55" stroke="#20283B" stroke-width="3"/><rect x="410" y="210" width="140" height="80" fill="${win}" stroke="#20283B" stroke-width="3"/><rect x="600" y="230" width="56" height="102" fill="#17233D"/><g fill="#F5C451"><rect x="470" y="172" width="120" height="10" rx="4"/><rect x="455" y="162" width="18" height="30" rx="4"/><rect x="587" y="162" width="18" height="30" rx="4"/></g><text x="555" y="320" font-size="16" font-weight="900" fill="#F5C451" text-anchor="middle" font-family="sans-serif">IRON PULSE</text>`,
+  community:`<rect x="360" y="190" width="380" height="142" fill="#FFF3DE" stroke="#20283B" stroke-width="3"/><polygon points="345,192 550,130 755,192" fill="#3288E8" stroke="#20283B" stroke-width="3"/>${[0,1,2,3,4].map(i=>`<rect x="${390+i*75}" y="200" width="22" height="132" fill="#E8D5B7" stroke="#20283B" stroke-width="2"/>`).join('')}<g>${[0,1,2,3,4,5,6,7].map(i=>`<polygon points="${200+i*60},120 ${230+i*60},120 ${215+i*60},140" fill="${['#FF6D76','#F5C451','#4CBF91','#3288E8'][i%4]}"/>`).join('')}</g><path d="M200 120h480" stroke="#20283B" stroke-width="2"/>`,
+  business:`${[[360,90,90],[470,40,110],[600,110,80],[700,70,90]].map(([x,y,w],k)=>`<rect x="${x}" y="${y}" width="${w}" height="${332-y}" fill="${['#3288E8','#17233D','#5C6BC0','#2B3F6E'][k]}" stroke="#20283B" stroke-width="3"/>${Array.from({length:Math.floor((300-y)/30)},(_,r)=>Array.from({length:Math.floor(w/26)},(_,c)=>`<rect x="${x+8+c*26}" y="${y+12+r*30}" width="14" height="16" fill="${(r+c+k)%3?win:'#ffffff55'}"/>`).join('')).join('')}`).join('')}<text x="525" y="30" font-size="14" font-weight="900" fill="#F5C451" text-anchor="middle" font-family="sans-serif">KD FINANCE</text>`
+ };
+ s+=B[loc]||'';
+ if(night)s+=`<rect width="800" height="400" fill="#0B1430" opacity=".25"/>`;
+ return s+'</svg>';
+}
+
+/* ---------------- Items ---------------- */
+const ITEMS={
+ phone:{n:'Basic Phone',i:'📱',d:'Messages, banking and job alerts. Open the PHONE tab.',t:'key'},
+ bikekey:{n:'Bicycle Key',i:'🔑',d:"Dad's old bicycle. Required for delivery work; bike travel costs energy, not money.",t:'key'},
+ notebook:{n:'Notebook',i:'📓',d:'Required for studying at home.',t:'key'},
+ snack:{n:'Samosa Pack',i:'🥟',d:'Use: +15 energy.',t:'use',price:40,shop:'market'},
+ tiffin:{n:"Kamala's Tiffin",i:'🍱',d:'Use: +30 energy, +5 happiness.',t:'use'},
+ designbook:{n:'Design Basics',i:'📘',d:'Use at home (2h): +3 INT.',t:'use',price:500,shop:'bookstore'},
+ laptop:{n:'Used Laptop',i:'💻',d:'Required for freelance design work.',t:'key',price:4000,shop:'market'},
+ cafecard:{n:'Café Staff Card',i:'🎫',d:"Rosa's thank-you: one free coffee every day at Brew & Banter.",t:'key'},
+ setlist:{n:"Riya's Setlist Notebook",i:'🎼',d:'Return it to Riya at the café.',t:'quest'},
+ poetry:{n:'Poetry Collection',i:'📖',d:'Gift. For someone who loves words.',t:'gift',price:300,shop:'bookstore'},
+ sketchbook:{n:'Sketchbook',i:'🎨',d:'Gift. For an artist.',t:'gift',price:250,shop:'bookstore'},
+ strings:{n:'Guitar Strings',i:'🎸',d:'Gift. For a musician.',t:'gift',price:350,shop:'market'},
+ planner:{n:'Leather Planner',i:'🗂️',d:'Gift. For someone who plans everything.',t:'gift',price:300,shop:'market'},
+ film:{n:'Film Roll',i:'🎞️',d:'Gift. For a photographer.',t:'gift',price:280,shop:'market'},
+ chocolate:{n:'Chocolates',i:'🍫',d:'Gift. Sweet, simple.',t:'gift',price:150,shop:'market'},
+ flowers:{n:'Flowers',i:'💐',d:'Gift. Not everyone likes them early on.',t:'gift',price:200,shop:'market'},
+ perfume:{n:'Designer Perfume',i:'🧴',d:'Gift. Expensive — but money can\'t buy trust.',t:'gift',price:900,shop:'market'},
+ ev_notice:{n:'Debt Notice',i:'📄',d:"Kade's notice: loan of ₹50,000 'signed in person' by your father at KD Finance on March 3.",t:'ev'},
+ ev_receipt:{n:'Hospital Receipt',i:'🧾',d:'Dad was admitted to City Hospital from 8 AM to 9 PM on March 3 — the day he supposedly signed.',t:'ev'},
+ ev_letter:{n:"Dad's Hidden Letter",i:'✉️',d:'"They wanted my courier licence for their fake permits. I refused. If they come for money, I never borrowed a rupee."',t:'ev'},
+ ev_photo:{n:"Sana's Photograph",i:'📷',d:"Kade handing a folder marked 'KD — permits' to a SwiftLine depot manager.",t:'ev'},
+ ev_manifest:{n:'Depot Manifest',i:'📦',d:"SwiftLine manifests using Dad's licence number — dated weeks after he died.",t:'ev'}
+};
+const LIKES={aanya:{love:['poetry','sketchbook'],hate:['perfume']},riya:{love:['strings','chocolate'],hate:['planner']},meera:{love:['planner'],hate:['perfume','flowers']},sana:{love:['film','sketchbook'],hate:['perfume']}};
+
+/* ---------------- Character route data ---------------- */
+const CHARD={
+ aanya:{where:{bookstore:[0,1],community:[2]},interests:'Literature, art, quiet conversations',values:'Honesty · consistency · thoughtful gestures · respect for boundaries',
+  open:['"Oh — hi. I was just reorganizing the poetry shelf. Again."','"Quiet day. The best kind, honestly."','"Footnote the cat has claimed your favorite chair."'],
+  good:['Ask what she is reading right now','Ask about the sketch on her notepad','Recommend a book you genuinely loved'],
+  bad:['Talk about getting rich quick','Vent about your debt the whole time','Ask why she wastes time on poems'],
+  hang:['Browse second-hand book stalls together','Go to a loud arcade'],date:{t:'Poetry night',bg:'community',d:'Lantern-lit readings at the Community Center. Aanya is wearing her favorite mustard scarf.',g:'Listen closely and ask about her favorite poem',b:'Check your phone between readings'}},
+ riya:{where:{cafe:[0,1],park:[2]},interests:'Music, humor, exploring the city',values:'Playfulness · kindness · confidence without arrogance · shared adventures',
+  open:['"Welcome back, foam victim!"','"I\'m on my fifth espresso. I can hear colors."','"Quick, tell me something ridiculous."'],
+  good:['Ask about her band\'s new song','Trade terrible puns with her','Suggest exploring the night market together'],
+  bad:['Lecture her about working too much','Brag about how cool you are','Say music is a waste of time'],
+  hang:['Hunt for the city\'s best street momos','Sit through a slow budget seminar'],date:{t:'Rooftop jam',bg:'park',d:'Riya brings her guitar to the park bandstand. Fairy lights flicker on.',g:'Sing badly but wholeheartedly with her',b:'Critique her chords like a judge'}},
+ meera:{where:{business:[0,1],cafe:[2]},interests:'Technology, startups, solving practical problems',values:'Reliability · clear communication · real effort · her independence',
+  open:['"I have exactly twenty minutes. Make them good."','"My calendar says \'breathe\'. So — hi."','"Tell me something useful you learned this week."'],
+  good:['Ask about the product she is building','Discuss a practical problem you solved','Ask for her honest feedback on your plans'],
+  bad:['Tell her she works too much','Promise big things you can\'t back up','Talk only about yourself'],
+  hang:['Plan a mini-hackathon over chai','Make her skip work for an aimless day'],date:{t:'Rooftop dinner',bg:'business',d:'A simple rooftop table overlooking the glowing towers. Her phone is, for once, face-down.',g:'Ask about her dream — and really listen',b:'Spend the dinner pitching your own ideas'}},
+ sana:{where:{park:[0,2],market:[1]},interests:'Photography, hidden places, city stories',values:'Curiosity · creativity · patience · genuine interest in her work',
+  open:['"The light is doing something weird today. Look."','"I found a staircase that goes nowhere. Love it."','"You again. Good — hold this lens."'],
+  good:['Ask about her latest photograph','Tell her about a hidden corner you found','Ask how she chooses what to shoot'],
+  bad:['Ask how much her photos sell for','Rush her because you\'re bored','Say phones take better pictures'],
+  hang:['Explore an abandoned rooftop for photos','Go to a crowded mall'],date:{t:'Night photo walk',bg:'market',d:'The market lanterns glow. Sana hands you her spare camera.',g:'Take your time and find your own shot',b:'Hurry her along to dinner'}}
+};
+
+/* ---------------- Jobs ---------------- */
+const JOBS={
+ delivery:{n:'Delivery Rider',i:'🚲',loc:'market',boss:'hari',h:2,en:16,pay:350,lvl:60,limit:3,open:[7,21],req:{item:'bikekey'},d:'Carry parcels across town for Hari. Choose your route each run.'},
+ cafe:{n:'Café Assistant',i:'☕',loc:'cafe',boss:'rosa',h:4,en:24,pay:650,lvl:80,limit:1,open:[7,17],req:{},iv:1,d:'Shifts at Brew & Banter. Meet regulars — and Riya.'},
+ shop:{n:'Shop Assistant',i:'🧺',loc:'market',boss:'gopal',h:3,en:18,pay:450,lvl:60,limit:1,open:[8,20],req:{cha:8},iv:1,d:"Handle customers at Gopal's general store."},
+ freelance:{n:'Freelance Designer',i:'🎨',loc:'home',boss:'player',h:2,en:18,pay:600,lvl:0,limit:1,open:[7,23],req:{int:18,item:'laptop',flag:'course_done'},d:'Design projects from home. Choose quality or speed.'},
+ courier:{n:'Logistics Lead',i:'📦',loc:'workplace',boss:'neha',h:4,en:28,pay:1200,lvl:120,limit:1,open:[7,19],req:{str:15},iv:1,d:'Run the morning dispatch at SwiftLine.'},
+ analyst:{n:'Junior Analyst',i:'💻',loc:'business',boss:'neha',h:5,en:28,pay:1700,lvl:150,limit:1,open:[8,17],req:{int:28,cha:15},iv:1,d:'Data and reports at Brightloop Tech.'}
+};
+const INTERVIEWS={
+ cafe:{who:'rosa',q:'"Saturday rush. Three orders come out wrong and the line is out the door. What do you do?"',
+  a:{t:'Apologize, remake them fast, stay calm',sub:'Uses CHA + reliability',ok:()=>S.cha+S.dep*2>=4},b:{t:'Claim you worked at a famous café chain',sub:'A bluff — needs CHA 14',ok:()=>S.cha>=14,lie:1}},
+ shop:{who:'gopal',q:'"A customer swears you short-changed him by ₹100. The line is long. Your move?"',
+  a:{t:'Count the drawer together, openly',sub:'Needs CHA 8 and an honest reputation',ok:()=>S.cha>=8&&S.hon>=0},b:{t:'Insist you are never wrong',sub:'Only works if you are known as very reliable',ok:()=>S.dep>=6}},
+ courier:{who:'neha',q:'"A truck is late and twenty parcels must go out by noon. What\'s your plan?"',
+  a:{t:'Re-route by priority using a map',sub:'Needs INT 16',ok:()=>S.int>=16},b:{t:'Load the bikes and do it yourself',sub:'Needs STR 22',ok:()=>S.str>=22}},
+ analyst:{who:'neha',q:'"Brightloop wants to know: tell us about a time you failed."',
+  a:{t:'Be honest about the debt and what it taught you',sub:'Needs INT 28 and honesty ≥ 0',ok:()=>S.int>=28&&S.hon>=0},b:{t:'Claim you have never really failed',sub:'Needs CHA 30',ok:()=>S.cha>=30,lie:1}}
+};
+
+/* ---------------- Business ---------------- */
+const BIZ={
+ stand:{n:'Coffee Stand',i:'☕',cost:8000,d:'Commuter chai and cold coffee. Revenue grows with Popularity.',rev:b=>1100+b.level*400+S.pop*12,op:b=>450+b.level*120,req:()=>''},
+ online:{n:'Online Print Shop',i:'🛍️',cost:6000,d:'Custom prints and stickers. Revenue grows with Intelligence.',rev:b=>700+b.level*350+S.int*15,op:b=>300+b.level*90,req:()=>S.int>=18?'':'Requires INT 18'},
+ riders:{n:'Rider Network',i:'🛵',cost:12000,d:'Your own local delivery crew. Revenue grows with Strength.',rev:b=>1800+b.level*600+S.str*10,op:b=>900+b.level*180,req:()=>Career.level('delivery')>=2?'':'Requires Delivery level 2'}
+};
+
+/* ---------------- State ---------------- */
+function defaultState(name){
+ return {v:1,name:name||'Arjun',day:1,hour:7,loc:'home',
+  cash:0,bank:0,debt:50000,paidTotal:0,paidWeek:0,dueDay:7,dueAmt:2500,missed:0,earned:0,
+  energy:100,happy:45,int:10,cha:5,str:5,pop:5,hon:0,dep:0,skipMeal:false,
+  inv:{phone:1,bikekey:1,notebook:1},flags:{},done:{},quests:{},ach:{},
+  unlocked:['home','cafe','bookstore','park','market'],jobs:{},
+  today:{talk:{},gift:{},hang:{},jobs:{},misc:{}},
+  biz:null,pending:[],queue:['intro_1'],ev:null,
+  chars:Object.fromEntries(ROMANCE.map(c=>[c,{aff:0,trust:0,int:0,fru:0,stage:0,talks:0,dates:0,gifts:[],metDay:0,lastDate:-9,flags:{}}])),
+  msgs:[{from:'Mom',text:'Beta, come home early today. We need to talk about your father\'s papers.',day:1,read:false}],
+  decisions:[],ending:null};
+}
+
+/* ---------------- Player / Effects ---------------- */
+const STATN={cash:'CASH',bank:'BANK',debt:'DEBT',energy:'ENERGY',happy:'HAPPINESS',int:'INTELLIGENCE',cha:'CHARISMA',str:'STRENGTH',pop:'POPULARITY',hon:'HONESTY',dep:'RELIABILITY'};
+const Player={
+ repLabel(){const a=[];if(S.dep>=5)a.push('Dependable');else if(S.dep<=-5)a.push('Unreliable');if(S.hon>=5)a.push('Honest');else if(S.hon<=-5)a.push('Dishonest');if(S.dep>=8&&S.hon>=3)a.splice(0,1,'Responsible');return a.length?a.join(' · '):'Unknown';},
+ apply(e,tag){
+  if(!e)return [];
+  const chips=[];
+  if(e.fn)e.fn(S);
+  for(const k of ['cash','bank','debt','energy','happy','int','cha','str','pop','hon','dep']){
+   if(!e[k])continue;let d=e[k];
+   if(k==='cash'||k==='bank'){if(S[k]+d<0)d=-S[k];S[k]+=d;if(k==='cash'&&d>0)S.earned+=d;}
+   else if(k==='debt'){const nd=Math.max(0,S.debt+d);d=nd-S.debt;S.debt=nd;}
+   else{const lim=(k==='hon'||k==='dep')?[-20,20]:[0,100];const nv=clamp(S[k]+d,lim[0],lim[1]);d=nv-S[k];S[k]=nv;}
+   if(!d)continue;
+   const money=k==='cash'||k==='bank'||k==='debt',good=k==='debt'?d<0:d>0;
+   chips.push({t:money?`${d>0?'+':'−'}${fmt(d)} ${STATN[k]}`:`${d>0?'+':''}${d} ${STATN[k]}`,c:good?'pos':'neg'});
+   if(k==='cash'&&d>0)Sound.money();
+   UI.pulse(k);
+  }
+  if(e.hours)Time.adv(e.hours);
+  if(e.items)for(const [i,n] of Object.entries(e.items)){S.inv[i]=Math.max(0,(S.inv[i]||0)+n);if(!S.inv[i])delete S.inv[i];chips.push({t:`${n>0?'ITEM +':'ITEM −'} ${ITEMS[i].i} ${ITEMS[i].n}`,c:n>0?'gold':'neg'});}
+  if(e.flags)Object.assign(S.flags,e.flags);
+  if(e.unflag)e.unflag.forEach(f=>delete S.flags[f]);
+  if(e.rel)for(const [c,o] of Object.entries(e.rel))chips.push(...Rel.mod(c,o));
+  if(e.stage)for(const [c,n] of Object.entries(e.stage))chips.push(...Rel.setStage(c,n));
+  if(e.unlock)e.unlock.forEach(l=>Loc.unlock(l,chips));
+  if(e.hire){Career.hire(e.hire);chips.push({t:`HIRED — ${JOBS[e.hire].n.toUpperCase()}`,c:'gold'});}
+  if(e.xp)for(const [j,n] of Object.entries(e.xp)){Career.ensure(j);S.jobs[j].xp+=n;}
+  if(e.msg)Phone.push(e.msg.from,e.msg.text);
+  chips.forEach(c=>UI.toast(c.t+(tag?' — '+tag:''),c.c));
+  return chips;
+ }
+};
+
+/* ---------------- RelationshipManager ---------------- */
+const Rel={
+ here(c){const w=CHARD[c].where[S.loc];return !!w&&w.includes(P())&&S.chars[c].fru<60&&S.hour<22;},
+ present(){return ROMANCE.filter(c=>S.chars[c].stage>0&&Rel.here(c));},
+ mod(c,o){
+  const R=S.chars[c],n=PEOPLE[c].name,out=[];
+  for(const k of ['aff','trust','int','fru']){
+   if(!o[k])continue;let d=o[k];
+   if(k==='trust'&&d>0&&R.fru>=40)d=Math.ceil(d/2);
+   const nv=clamp(R[k]+d,0,100);d=nv-R[k];R[k]=nv;if(!d)continue;
+   const lbl={aff:['♥ AFFECTION','♥ AFFECTION'],trust:['🤝 TRUST','🤝 TRUST'],int:['✨ INTEREST','✨ INTEREST'],fru:['😠 FRUSTRATION','😌 FRUSTRATION']}[k];
+   const good=k==='fru'?d<0:d>0;
+   out.push({t:`${n.toUpperCase()}: ${lbl[0]} ${Settings.info?(d>0?'+':'')+d:(d>0?'UP':'DOWN')}`,c:good?'pos':'neg'});
+  }
+  return out;
+ },
+ setStage(c,n){
+  const R=S.chars[c];if(R.stage===n)return [];
+  if(n>=1&&!R.metDay)R.metDay=S.day;
+  R.stage=n;Sound.note();
+  return [{t:`RELATIONSHIP UPDATE — ${PEOPLE[c].name.toUpperCase()}: ${STAGES[n].toUpperCase()}`,c:'gold'}];
+ },
+ otherDating(c){return ROMANCE.find(x=>x!==c&&S.chars[x].stage>=4);},
+ mood(c){const R=S.chars[c];if(R.fru>=60)return ['Needs space right now','neg-t'];if(R.fru>=35)return ['A little frustrated with you','neg-t'];if(R.aff>=70)return ['Lights up when you\'re around','pos-t'];if(R.aff>=40)return ['Enjoys your company','pos-t'];if(R.aff>=15)return ['Friendly','pos-t'];return R.stage?['Polite, still getting to know you','']:['You haven\'t met yet',''];},
+ dateBlock(c){const R=S.chars[c];
+  if(P()!==2)return 'She prefers evening plans — ask in the evening.';
+  if(R.fru>=35)return '"I think I need a little space this week."';
+  if(S.day-R.lastDate<2)return '"We just went out! Let\'s not rush things."';
+  if(S.energy<25)return '"You look exhausted. Rest first, okay?"';
+  return '';},
+ gift(c,item){
+  const R=S.chars[c],n=PEOPLE[c].name,L=LIKES[c];
+  if(!has(item)||S.today.gift[c])return;
+  S.today.gift[c]=1;S.inv[item]--;if(!S.inv[item])delete S.inv[item];
+  const recent=R.gifts.filter(g=>S.day-g.d<=3).length;R.gifts.push({i:item,d:S.day});
+  let eff,line,ex;
+  if(L.hate.includes(item)){eff={aff:-3,fru:8};ex='confused';line=item==='perfume'?'"This is… a lot. You don\'t need to buy me expensive things."':'"Oh. Thanks… it\'s not really my thing."';}
+  else if(L.love.includes(item)){eff={aff:recent>=2?3:7,int:3,trust:R.stage>=2?1:0};ex='happy';line='"You remembered what I love. That\'s really thoughtful."';}
+  else{eff={aff:recent>=2?1:2};ex='neutral';line='"That\'s sweet of you, thanks."';}
+  if(recent>=2){eff.fru=(eff.fru||0)+5;line+=' "…You don\'t have to keep giving me things, you know."';}
+  const chips=Player.apply({rel:{[c]:eff}});
+  UI.sayEvent(c,`A gift for ${n}`,`You give ${n} the ${ITEMS[item].n}. ${line}`,ex,chips);
+ }
+};
+
+/* ---------------- Event data ---------------- */
+const EVENTS={};
+function E(id,o){o.id=id;EVENTS[id]=o;}
+const C=c=>S.chars[c];
+const cdOk=k=>S.day>=(F(k)||0);
+const noOther=c=>()=>{const o=Rel.otherDating(c);return o?`You're already dating ${PEOPLE[o].name} — she expects exclusivity.`:'';};
+
+// ---- Main story ----
+E('intro_1',{title:'Ten days after the funeral',sp:'mom',chars:[['mom','sad']],desc:'The house still smells of incense and marigolds. Mom sits at the kitchen table with a stack of unopened envelopes.',
+ text:'"Your father always said he had everything under control. Now I can\'t even bring myself to open these letters."',ch:[
+ {t:'Promise Mom you\'ll handle everything',sub:'+Reliability',eff:{happy:5,dep:2,flags:{promise_mom:1}},res:'Mom squeezes your hand. "Just don\'t carry it all alone." You feel the weight — and a purpose.',expr:'happy',next:'intro_kade',rec:'Promised Mom you would handle the family\'s problems'},
+ {t:'Admit you\'re scared too',sub:'+Honesty',eff:{hon:2,happy:2,flags:{honest_mom:1}},res:'Mom laughs through her tears. "Good. Scared people are careful people."',expr:'happy',next:'intro_kade',rec:'Were honest with Mom about being scared'}]});
+E('intro_kade',{title:'An unexpected visitor',sp:'kade',chars:[['kade','neutral']],desc:'A black sedan stops outside. A tall man in dark glasses steps onto the porch.',
+ text:'"Mr. Kade. KD Finance. Your father borrowed ₹50,000 from us. Weekly installments of ₹2,500 start now — first one due by the end of Day 7."',ch:[
+ {t:'Ask for proof and remain calm',sub:'+INT · get the paperwork',eff:{int:1,hon:1,items:{ev_notice:1},flags:{met_kade:1,knows_debt:1,calm_kade:1}},res:'Kade raises an eyebrow and hands over a signed notice. "Smart. Read it carefully." The signing date says March 3.',expr:'neutral',next:'intro_after',rec:'Asked Kade for proof calmly'},
+ {t:'Argue and demand more time',sub:'Risky',eff:{cha:1,happy:-5,flags:{met_kade:1,knows_debt:1,argued_kade:1},fn:s=>{s.dueAmt=3000}},res:'Kade\'s smile vanishes. "Then let\'s make it ₹3,000 a week." He leaves without showing any papers.',expr:'angry',next:'intro_after',rec:'Argued with Kade — installments raised to ₹3,000'}]});
+E('intro_after',{title:'Picking up the pieces',sp:'mom',chars:[['mom','neutral']],desc:'After the car leaves, Mom points at Dad\'s old desk and the dusty bicycle by the door.',
+ text:'"Your father kept every receipt he ever touched. And that bicycle still runs — Hari at Lantern Market is always looking for delivery riders."',ch:[
+ {t:'Head out and look for work today',eff:{dep:1},res:'Objective: get hired. Hari hires riders at Lantern Market; Rosa is hiring at the café. Open CITY to travel.'},
+ {t:'Take a moment to steady yourself first',eff:{happy:6},res:'You breathe. Dad\'s desk isn\'t going anywhere — you can search it from your HOME actions any time.'}]});
+E('kamala_visit',{trig:'day',cond:()=>S.day>=2&&!F('met_kamala'),title:'A neighbor at the gate',sp:'kamala',chars:[['kamala','happy']],desc:'Auntie Kamala from next door arrives with a steel tiffin box.',
+ text:'"I brought lemon rice. Also — my gate is hanging off its hinges, and that free-ish design course at the Community Center starts this week. Your father helped everybody, you know."',ch:[
+ {t:'Thank her and promise to fix the gate',sub:'Needs STR 12 later',eff:{dep:1,happy:4,items:{tiffin:1},flags:{met_kamala:1}},res:'"Bless you. Strong arms needed — come by when you\'re ready." The Community Center is now on your map.',expr:'happy'},
+ {t:'Ask what she knew about your father',sub:'+INT · a clue',eff:{int:1,items:{tiffin:1},flags:{met_kamala:1,kamala_hint:1}},res:'"He argued with a man in dark glasses near the SwiftLine depot. Twice." She also mentions the broken gate.',expr:'sad'}]});
+E('hari_signup',{trig:'arrive',loc:'market',per:[0,1,2],cond:()=>!hired('delivery'),title:'Riders wanted',sp:'hari',chars:[['hari','happy']],desc:'A man in a yellow vest is shouting into two phones at once next to a row of parcels.',
+ text:'"You\'ve got a bike? You\'ve got a job. ₹350 a run, more when you get faster. Up to three runs a day."',ch:[
+ {t:'Sign up on the spot',sub:'+Reliability',eff:{dep:1,hire:'delivery'},res:'"That\'s the spirit!" Hari slaps a reflective sticker on your bike. Delivery work is available here at Lantern Market.',expr:'happy'},
+ {t:'Ask about pay rules and safety first',sub:'+CHA',eff:{cha:1,hire:'delivery'},res:'Hari explains: fast routes pay more but drain you; safe routes keep customers happy. "Smart rider. You\'re hired."',expr:'happy'}]});
+E('rosa_intro',{trig:'arrive',loc:'cafe',per:[0,1],cond:()=>!F('met_rosa'),title:'A help-wanted sign',sp:'rosa',chars:[['rosa','neutral']],desc:'A grey-haired woman with reading glasses tapes a HELP WANTED sign to the café window.',
+ text:'"You look like someone who needs a job. I need someone who shows up on time. Interested?"',ch:[
+ {t:'Ask for an interview right now',eff:{flags:{met_rosa:1}},res:'Rosa pulls out a chair. "Let\'s see what you\'ve got."',next:'@interview|cafe'},
+ {t:'Not yet — just ask about the café',eff:{flags:{met_rosa:1},happy:3},res:'"Thirty years, three recessions, one stubborn espresso machine." She pours you a free cup. "The offer stands — apply from JOBS."',expr:'happy'}]});
+E('desk',{rep:1,title:'Dad\'s desk',sp:'player',chars:[['player','confused']],desc:'Folders, bills and a calendar full of circled dates. Kade says Dad signed the loan in person at KD Finance on March 3.',
+ text:'Two documents from early March catch your eye. Which one could prove the loan is fake?',ch:[
+ {t:'A City Hospital receipt dated March 3',eff:{hours:2,energy:-5,int:2,items:{ev_receipt:1},flags:{desk_done:1}},res:'Admitted 8 AM, discharged 9 PM. Dad couldn\'t have signed anything at KD Finance that day. Evidence found!',expr:'happy',rec:'Found the hospital receipt'},
+ {t:'An electricity bill paid March 2',eff:{hours:2,energy:-5,happy:-3,fn:s=>{s.flags.desk_cd=s.day+1}},res:'Just a bill — it proves nothing about the loan. Your eyes are tired. Try again tomorrow.',expr:'sad'}]});
+E('bike_letter',{title:'Under the bicycle seat',sp:'player',chars:[['player','sad']],desc:'While oiling the chain, you notice the seat is loose. Inside the frame: a sealed envelope with your name on it.',
+ text:'Dad\'s handwriting. Your hands shake a little.',ch:[
+ {t:'Read it alone, right now',eff:{hours:1,happy:-4,int:1,items:{ev_letter:1},flags:{letter_alone:1}},res:'"They wanted my courier licence for their fake permits. I refused. If they come for money — I never borrowed a rupee." Evidence found.',expr:'sad',rec:'Read Dad\'s letter alone'},
+ {t:'Read it together with Mom',eff:{hours:1,happy:4,dep:1,items:{ev_letter:1},flags:{letter_mom:1}},res:'Mom reads it twice, then hugs you. "He was protecting us." For the first time in weeks, she sleeps through the night. Evidence found.',expr:'happy',rec:'Read Dad\'s letter with Mom'}]});
+E('mom_watch',{trig:'day',cond:()=>S.day>=5&&!F('watch_done'),title:'Dad\'s watch',sp:'mom',chars:[['mom','sad']],desc:'Mom holds out Dad\'s old silver watch.',
+ text:'"Gopal offered ₹3,000 for this. We need it, beta. Your father would understand."',ch:[
+ {t:'Let her sell the watch',sub:'+₹3,000 cash',eff:{cash:3000,happy:-6,flags:{watch_done:1,sold_watch:1}},res:'Mom returns with the money and red eyes. The bills are a little lighter.',expr:'sad',rec:'Sold Dad\'s watch for ₹3,000'},
+ {t:'Keep it — you\'ll earn the money yourself',sub:'+Happiness, +Reliability',eff:{happy:5,dep:2,flags:{watch_done:1,kept_watch:1}},res:'Mom fastens the watch on your wrist. "Then make him proud."',expr:'happy',rec:'Kept Dad\'s watch'}]});
+E('kade_missed',{rep:1,title:'Kade comes to collect',sp:'kade',chars:[['kade','angry']],desc:'The black sedan is back. Kade doesn\'t bother taking off his glasses.',
+ text:()=>`"You missed the installment. ₹1,500 penalty added. Remaining: ${fmt(S.debt)}. Don't make me come back."`,ch:[
+ {t:'Apologize and promise to pay',eff:{dep:-1,happy:-3},res:'Kade nods once. "Promises are cheap. Installments aren\'t." The next deadline is a week away.',expr:'neutral'},
+ {t:'Point out his notice has the wrong date',sub:'Requires: Hospital Receipt',req:{item:'ev_receipt'},eff:{debt:-1000,int:1,flags:{kade_rattled:1}},res:'Kade studies you for a long moment. "…Fine. ₹1,000 of the penalty forgiven." He knows you know something.',expr:'confused',rec:'Rattled Kade with the hospital receipt'}]});
+E('farah_intro',{trig:'arrive',loc:'*',per:[0,1,2],cond:()=>evCount()>=2&&!F('met_farah')&&S.day>=3,title:'A stranger with a badge',sp:'farah',chars:[['farah','neutral']],desc:'A woman in a trench coat falls into step beside you.',
+ text:'"Farah Qureshi, financial crimes. KD Finance is on my desk, and your father\'s name keeps appearing in their paperwork. Did you find anything?"',ch:[
+ {t:'Share your evidence with her',sub:'+Honesty · new ally',eff:{hon:2,flags:{met_farah:1,farah_ally:1}},res:'She photographs everything. "This is real. The key is the SwiftLine depot — if you can find their manifests…" Business District unlocked.',expr:'happy',rec:'Trusted investigator Farah with the evidence'},
+ {t:'Keep it to yourself for now',sub:'Investigate alone',eff:{int:1,flags:{met_farah:1,solo:1}},res:'She hands you a card. "When you\'re ready. And stay away from the depot after dark."',expr:'neutral',rec:'Investigated alone at first'}]});
+E('depot_clue',{rep:1,title:'Inside SwiftLine',sp:'player',chars:[['player','confused'],['hari','neutral']],desc:'During a quiet moment, you spot two clipboards on the dispatch desk. Dad died on May 9.',
+ text:'One of these could prove KD Finance used Dad\'s courier licence. Which do you photograph?',ch:[
+ {t:'A manifest stamped with Dad\'s licence, dated June 2',eff:{hours:1,int:2,items:{ev_manifest:1},flags:{manifest_found:1}},res:'Dated weeks after his death. Someone is still using his licence for "permits". Evidence found!',expr:'happy',rec:'Photographed the depot manifest'},
+ {t:'A shift roster with Dad\'s name crossed out',eff:{hours:1,dep:-1,fn:s=>{s.flags.depot_cd=s.day+1}},res:'Just a roster. A foreman eyes you suspiciously. Better come back another day.',expr:'sad'}]});
+E('iyer_intro',{trig:'arrive',loc:'business',per:[0,1,2],cond:()=>!F('met_iyer'),title:'A mentor on a bench',sp:'iyer',chars:[['iyer','happy']],desc:'An older man feeding pigeons outside a glass tower waves you over.',
+ text:'"Everybody wants a business. Few want the boring parts — costs, suppliers, showing up. Which kind are you?"',ch:[
+ {t:'Ask him how to read a profit sheet',sub:'+2 INT',eff:{int:2,flags:{met_iyer:1}},res:'"Revenue minus costs. Everything else is decoration." You can now start a business from JOBS → Business.',expr:'happy'},
+ {t:'Pitch him your idea with confidence',sub:'+2 CHA, +2 POP',eff:{cha:2,pop:2,flags:{met_iyer:1}},res:'"Bold. Now back it with numbers." You can now start a business from JOBS → Business.',expr:'happy'}]});
+E('crossroads',{trig:'arrive',loc:'home',cond:()=>Q('q3')&&Q('q4')&&Q('q6')&&S.day>=12&&!F('truth_path')&&!F('deal_path'),title:'The Next Chapter',sp:'kade',chars:[['kade','neutral'],['mom','sad']],desc:'Kade is waiting on your porch. For once, he sounds almost friendly.',
+ text:'"I hear you\'ve been digging. Hand over your little papers, and I\'ll knock ₹20,000 off the debt. Everybody walks away happy."',ch:[
+ {t:'Refuse — take everything to Farah',sub:'The truth path',eff:{hon:3,happy:3,flags:{truth_path:1,farah_ally:1,met_farah:1},msg:{from:'Farah Qureshi',text:'Got your call. Meet me in the Business District (morning or afternoon) when you are ready to end this. More evidence = stronger case.'}},res:'"Mistake," Kade says, and leaves. Farah picks up on the first ring. FINALE: go to the Business District when you\'re ready.',expr:'angry',rec:'Refused Kade\'s deal and chose the truth'},
+ {t:'Take the deal and hand over the papers',sub:'−₹20,000 debt, lose evidence',eff:{debt:-20000,hon:-3,fn:s=>{EVIDENCE.forEach(i=>delete s.inv[i]);s.flags.deal_path=1;s.flags.deal_day=s.day},msg:{from:'Mr. Kade',text:'Pleasure doing business. I will collect the rest in two days. Have it ready.'}},res:'Kade pockets every document. The debt drops by ₹20,000… and Dad\'s story disappears into his briefcase. FINALE: Kade returns home in 2 days.',expr:'happy',rec:'Took Kade\'s ₹20,000 deal'}]});
+const exposeRun=(pub)=>()=>{const n=evCount(),full=n>=4,before=S.debt;S.debt=full?0:Math.round(S.debt/2);
+ return {eff:{pop:pub?15:3,cha:pub?2:0,int:pub?0:2,happy:10,flags:{exposed:1,exposed_full:full?1:0,public_testimony:pub?1:0}},res:(full?`With ${n} pieces of evidence, the fraud is undeniable. KD Finance is shut down and the forged loan is void — your remaining ${fmt(before)} debt is erased.`:`With only ${n} pieces of evidence, the court voids part of the loan. Your debt is halved to ${fmt(S.debt)}.`)+(pub?' Your testimony makes the evening news.':' Your statement stays sealed; the city never learns your name.'),expr:'happy',end:true,rec:pub?'Testified publicly against KD Finance':'Gave a sealed statement against KD Finance'};};
+E('finale_truth',{title:'FINALE — The hearing',sp:'farah',chars:[['farah','neutral'],['kade','angry']],desc:'A small hearing room on the 14th floor. Kade arrives with a lawyer and a very expensive frown.',
+ text:()=>`"You have ${evCount()} pieces of evidence. Four or more and we can void the whole loan. How do you want to do this?"`,ch:[
+ {t:'Testify publicly',sub:'+15 POP',run:exposeRun(1)},
+ {t:'Give a sealed, private statement',sub:'Safer, quieter',run:exposeRun(0)}]});
+E('finale_deal',{rep:1,trig:'arrive',loc:'home',cond:()=>F('deal_path')&&S.day>=(F('deal_day')||0)+2&&!S.ending,title:'FINALE — Kade returns',sp:'kade',chars:[['kade','neutral'],['mom','sad']],desc:'The sedan idles at the gate. Mom watches from the window.',
+ text:()=>`"Remaining balance: ${fmt(S.debt)}. Pay it all and you never see me again."`,ch:[
+ {t:'Pay the full amount now',sub:'Uses cash, then savings',req:{fn:()=>S.cash+S.bank>=S.debt?'':`Need ${fmt(S.debt)} in cash + bank`},run:()=>{const d=S.debt;const fromCash=Math.min(S.cash,d);S.cash-=fromCash;S.bank-=d-fromCash;S.paidTotal+=d;S.debt=0;return {eff:{happy:12,flags:{paid_kade:1}},res:`You hand over ${fmt(d)}. Kade counts it twice, nods, and drives away for good.`,expr:'neutral',end:true,rec:'Paid Kade in full'};}},
+ {t:()=>F('extended')?'Admit you can\'t pay — face the consequences':'Ask for one last extension (+₹2,000, 5 days)',run:()=>F('extended')?{eff:{happy:-10},res:'Kade sighs. "Then we do this the long way." The debt will follow you for years.',expr:'angry',end:true,rec:'Couldn\'t pay Kade in the end'}:{eff:{debt:2000,flags:{extended:1,deal_day:S.day+3}},res:'"Five days. Not one more." Kade adds ₹2,000 for his patience.',expr:'angry',rec:'Begged Kade for an extension'}}]});
+E('final_reckoning',{trig:'day',cond:()=>S.day>=40&&!S.ending,title:'FINALE — The final deadline',sp:'kade',chars:[['kade','angry']],desc:'Day 40. Kade\'s patience has run out.',
+ text:()=>`"Time\'s up. Remaining balance: ${fmt(S.debt)}. What\'s it going to be?"`,ch:[
+ {t:'Pay everything you have',run:()=>{const amt=Math.min(S.debt,S.cash+S.bank);const fc=Math.min(S.cash,amt);S.cash-=fc;S.bank-=amt-fc;S.debt-=amt;S.paidTotal+=amt;return {eff:{},res:`You hand over ${fmt(amt)}. ${S.debt?`${fmt(S.debt)} remains.`:'The debt is finally gone.'}`,expr:'neutral',end:true,rec:'Paid everything at the final deadline'};}},
+ {t:'Call Farah for help',req:{flag:'met_farah'},sub:'Requires meeting Farah',run:()=>{if(evCount()>=3){S.debt=Math.round(S.debt/2);return {eff:{flags:{exposed:1}},res:`Farah arrives with a warrant. Your evidence halves the debt to ${fmt(S.debt)}.`,expr:'happy',end:true,rec:'Called Farah at the last minute'};}return {eff:{},res:'Farah tries, but without enough evidence she can only slow Kade down.',expr:'sad',end:true,rec:'Called Farah without enough evidence'};}}]});
+E('riya_return',{trig:'arrive',loc:'cafe',cond:()=>has('setlist')&&Rel.here('riya'),title:'A lost notebook',sp:'riya',chars:[['riya','happy']],desc:'Riya spots the notebook in your hand and gasps.',
+ text:'"My SETLIST! Two years of lyrics! Where did you find it?!"',ch:[
+ {t:'Tell her the truth — under a park bench',eff:{items:{setlist:-1},hon:1,flags:{setlist_returned:1},rel:{riya:{aff:6,trust:8}}},res:'She hugs the notebook, then you. "You\'re officially a band roadie."',expr:'happy'},
+ {t:'Joke that you rescued it from pirates',eff:{items:{setlist:-1},cha:1,flags:{setlist_returned:1},rel:{riya:{aff:8,trust:4}}},res:'"Pirates! In Banyan Park!" She laughs so hard Rosa tells her to breathe.',expr:'happy'}]});
+
+// ---- Character routes ----
+function CE(c,key,o){o.sp=c;o.trig='arrive';o.loc=o.loc||'*';const base=o.cond;o.cond=()=>Rel.here(c)&&(!base||base());o.chars=o.chars||[[c,'talk']];E(`${c}_${key}`,o);}
+// Aanya
+CE('aanya','meet',{cond:()=>!C('aanya').stage,title:'Your first meeting with Aanya',desc:'At Inkwell Books, a young woman in a mustard cardigan is arranging a display of "The Monsoon Cartographer". She notices you looking.',
+ text:'"You\'ve been staring at that cover for a while. What do you think of it?"',ch:[
+ {t:'Share your honest opinion',sub:'You haven\'t read it',eff:{cha:1,hon:1,rel:{aanya:{aff:5,trust:6,int:6}},stage:{aanya:1},flags:{aanya_honest:1}},res:'"Haven\'t read it, but the cover looks like rain drew a map." She laughs softly. "That\'s… actually what it\'s about." She\'s Aanya.',expr:'happy',rec:'Were honest with Aanya at first meeting'},
+ {t:'Pretend you know everything about the book',sub:'Impressive… if it holds',eff:{rel:{aanya:{aff:8,int:4}},stage:{aanya:1},flags:{aanya_lie:1}},res:'You improvise a confident review. She\'s impressed. "I\'m halfway through — don\'t spoil the ending!" Uh-oh.',expr:'happy',rec:'Pretended to know Aanya\'s book'}]});
+CE('aanya','lie',{cond:()=>F('aanya_lie')&&S.day>=C('aanya').metDay+2,title:'The ending',desc:'Aanya waves the finished book at you, eyes shining.',
+ text:'"I finished it! That twist with the cartographer\'s sister — what did you think?!"',ch:[
+ {t:'Admit you never actually read it',sub:'Honesty',eff:{hon:2,unflag:['aanya_lie'],rel:{aanya:{trust:4,aff:-2}}},res:'A pause. "…Thank you for telling me. That matters more than the book." She lends you her copy.',expr:'neutral',rec:'Confessed the book lie to Aanya'},
+ {t:'Bluff your way through again',eff:{hon:-3,unflag:['aanya_lie'],rel:{aanya:{trust:-15,fru:20,aff:-5}}},res:'"There is no sister." Her voice goes flat. "Why would you pretend?"',expr:'angry',rec:'Doubled down on lying to Aanya'}]});
+CE('aanya','s1',{rep:1,cond:()=>C('aanya').stage===1&&C('aanya').talks>=2&&C('aanya').aff>=12&&cdOk('aanya_s1cd'),title:'Aanya\'s sketchbook',desc:'During a quiet hour, Aanya shows you an illustrated poetry book she has been making in secret.',
+ text:'"Nobody\'s seen these. My parents think drawing is a hobby I should have outgrown."',ch:[
+ {t:'Ask about each drawing and really listen',eff:{rel:{aanya:{aff:7,trust:8,int:5}},stage:{aanya:2}},res:'"You noticed the hidden birds!" She brightens. You\'re friends now.',expr:'happy'},
+ {t:'Suggest she sell them online for quick money',eff:{rel:{aanya:{trust:-4,int:-3}},fn:s=>{s.flags.aanya_s1cd=s.day+2}},res:'"It\'s not about money." She closes the book gently.',expr:'sad'}]});
+CE('aanya','s2',{rep:1,cond:()=>C('aanya').stage===2&&!F('aanya_friends')&&C('aanya').aff>=35&&C('aanya').trust>=30&&cdOk('aanya_s2cd'),title:'A difficult choice',desc:'Aanya holds two letters: a stable bank job her parents arranged, and a six-month art residency.',
+ text:'"Everyone has an opinion on my life except me. What would you do?"',ch:[
+ {t:'Say it\'s her decision — ask what she wants',eff:{rel:{aanya:{aff:8,trust:10,int:6}},stage:{aanya:3}},res:'"I want the residency," she whispers, surprising herself. "Thank you for not deciding for me." Something shifts between you.',expr:'happy'},
+ {t:'Tell her to take the bank job — money matters',eff:{rel:{aanya:{trust:-6,fru:10}},fn:s=>{s.flags.aanya_s2cd=s.day+3}},res:'"You sound like my father." She tucks the letters away.',expr:'sad'}]});
+CE('aanya','confess',{rep:1,cond:()=>C('aanya').stage===3&&C('aanya').aff>=55&&C('aanya').trust>=45&&C('aanya').dates>=1,title:'Under the reading lamps',desc:'After closing, Aanya walks with you along the lantern-lit lane.',
+ text:'"I keep writing poems that end with you in them. Is that strange?"',ch:[
+ {t:'Tell her how you feel and ask her out',req:{fn:noOther('aanya')},eff:{rel:{aanya:{aff:10,trust:6}},stage:{aanya:4}},res:'"Then let\'s write the next page together." You\'re dating Aanya.',expr:'happy',rec:'Started dating Aanya'},
+ {t:'Say you treasure her as a close friend',eff:{rel:{aanya:{trust:4}},stage:{aanya:2},flags:{aanya_friends:1}},res:'"I understand. I\'d hate to lose this either." Your friendship stays warm.',expr:'neutral',rec:'Stayed close friends with Aanya'}]});
+CE('aanya','s3',{rep:1,cond:()=>C('aanya').stage===4&&C('aanya').aff>=75&&C('aanya').trust>=65&&C('aanya').dates>=3&&cdOk('aanya_s3cd'),title:'The book launch',desc:'Aanya\'s first illustrated poetry book launches tonight. Her parents stand stiffly in the back row.',
+ text:'"My parents came. I\'m terrified. Will you stay close?"',ch:[
+ {t:'Stand beside her and greet her parents respectfully',eff:{pop:5,rel:{aanya:{aff:10,trust:10}},stage:{aanya:5}},res:'Her father shakes your hand: "She says you never once told her what to do." Aanya takes your hand — you\'re committed.',expr:'happy',rec:'Committed to Aanya'},
+ {t:'Wait at the back so you don\'t intrude',eff:{rel:{aanya:{aff:2}},fn:s=>{s.flags.aanya_s3cd=s.day+3}},res:'"…Okay." She handles it alone. Maybe today she needed more than space.',expr:'sad'}]});
+// Riya
+CE('riya','meet',{cond:()=>!C('riya').stage,title:'Foam disaster',desc:'A barista with a cherry-red ponytail spins around and sends a cappuccino\'s foam straight onto your sleeve.',
+ text:'"Oh no. Oh NO. Okay, in my defense, the cup started it."',ch:[
+ {t:'Laugh and blame the cup too',eff:{cha:1,rel:{riya:{aff:8,int:8}},stage:{riya:1}},res:'"A fellow cup-hater!" She hands you a free cookie. "I\'m Riya. You\'re officially my favorite customer today."',expr:'happy'},
+ {t:'Ask her to be more careful',eff:{rel:{riya:{aff:2,int:2,fru:3}},stage:{riya:1}},res:'"Right. Sorry." She scrubs your sleeve, embarrassed. Her name tag says RIYA.',expr:'sad'}]});
+CE('riya','s1',{rep:1,cond:()=>C('riya').stage===1&&C('riya').talks>=2&&C('riya').aff>=12&&cdOk('riya_s1cd'),title:'The case of the mistaken critic',desc:'Riya has heard a famous music critic is in town — and she\'s convinced it\'s you.',
+ text:'"Be honest. You\'re reviewing my band, aren\'t you? Is that why you keep coming here?!"',ch:[
+ {t:'Play along for a minute, then come clean',eff:{happy:4,rel:{riya:{aff:7,trust:6}},stage:{riya:2},flags:{riya_lost:1},msg:{from:'Riya',text:'ALSO. Tragedy. I lost my setlist notebook somewhere in Banyan Park. If you see a purple notebook full of lyrics… 🙏'}},res:'Your dramatic "review" of the coffee machine has her crying with laughter. "You\'re ridiculous. Come to our next gig." Friends!',expr:'happy'},
+ {t:'Keep pretending — for the free coffee',eff:{hon:-2,rel:{riya:{trust:-6,aff:2}},flags:{riya_lost:1},fn:s=>{s.flags.riya_s1cd=s.day+2},msg:{from:'Riya',text:'Rosa says the critic is a 60-year-old man. Hmm. Also I lost my purple setlist notebook in the park. 😑'}},res:'Free coffee tastes great… until Rosa mentions the critic is a 60-year-old man. Riya is not amused.',expr:'angry',rec:'Pretended to be a music critic'}]});
+CE('riya','s2',{rep:1,cond:()=>S.loc==='park'&&C('riya').stage===2&&!F('riya_friends')&&C('riya').aff>=35&&C('riya').trust>=30&&cdOk('riya_s2cd'),title:'Music night in the park',desc:'Riya\'s band is about to play Banyan Park\'s open-air night when their amp dies.',
+ text:'"Thirty people are waiting and our amp just… died. Maybe this is a sign I should quit."',ch:[
+ {t:'Haul a spare amp from the Community Center',sub:'Easier with STR 12+',run:()=>({eff:{energy:S.str>=12?-12:-25,hours:1,pop:5,rel:{riya:{aff:9,trust:10}},stage:{riya:3}},res:(S.str>=12?'You jog back with the amp like it weighs nothing.':'You drag the amp across the park, wheezing — but you make it.')+' The crowd roars; Riya dedicates the last song "to my roadie".',expr:'happy'})},
+ {t:'Tell her to cancel — it\'s not worth the stress',eff:{rel:{riya:{trust:-6,fru:10}},fn:s=>{s.flags.riya_s2cd=s.day+3}},res:'"Yeah. Maybe." She packs up quietly. That wasn\'t what she needed to hear.',expr:'sad'}]});
+CE('riya','confess',{rep:1,cond:()=>C('riya').stage===3&&C('riya').aff>=55&&C('riya').trust>=45&&C('riya').dates>=1,title:'After the encore',desc:'Riya sits on the café counter after closing, swinging her legs.',
+ text:'"So… I wrote a song. It\'s about a guy who laughs at cups. Too obvious?"',ch:[
+ {t:'Tell her it\'s perfect — and so is she',req:{fn:noOther('riya')},eff:{rel:{riya:{aff:10,trust:6}},stage:{riya:4}},res:'She hides her face in her apron, laughing. "Okay. Okay! We\'re doing this." You\'re dating Riya.',expr:'happy',rec:'Started dating Riya'},
+ {t:'Say you\'d rather stay best friends',eff:{rel:{riya:{trust:4}},stage:{riya:2},flags:{riya_friends:1}},res:'"Best friends who share fries. Deal." She means it.',expr:'neutral',rec:'Stayed best friends with Riya'}]});
+CE('riya','s3',{rep:1,cond:()=>C('riya').stage===4&&C('riya').aff>=75&&C('riya').trust>=65&&C('riya').dates>=3&&cdOk('riya_s3cd'),title:'The audition',desc:'A touring band has invited Riya to audition in the capital. Three months on the road.',
+ text:'"If I get it, I\'m gone for a while. Tell me honestly what you think."',ch:[
+ {t:'Tell her to chase it — you\'ll be right here',eff:{rel:{riya:{aff:10,trust:12}},stage:{riya:5}},res:'"You mean it?" She kisses your cheek. "Then I\'m coming back to you." You\'re committed.',expr:'happy',rec:'Committed to Riya'},
+ {t:'Ask her to stay',eff:{rel:{riya:{trust:-8,fru:15}},fn:s=>{s.flags.riya_s3cd=s.day+3}},res:'Her smile falters. "I thought you\'d be the one person who\'d say go."',expr:'sad'}]});
+// Meera
+CE('meera','meet',{cond:()=>!C('meera').stage,title:'Nine minutes',desc:'At a corner table, a woman in a navy blazer glares at a laptop that refuses to boot before her investor call.',
+ text:'"Please tell me you know computers. I have nine minutes."',ch:[
+ {t:'Admit you don\'t — but offer to help troubleshoot',eff:{dep:1,rel:{meera:{aff:5,trust:8,int:4}},stage:{meera:1}},res:'You spot the loose charger together. The call connects. "Honest. Rare. I\'m Meera."',expr:'happy'},
+ {t:'Pretend to be a tech expert',sub:'Works only with INT 25+',run:()=>S.int>=25?{eff:{rel:{meera:{aff:8,trust:4,int:8}},stage:{meera:1}},res:'You actually fix the boot order. "Okay, I\'m impressed. I\'m Meera."',expr:'happy'}:{eff:{hon:-2,rel:{meera:{trust:-4,fru:6}},stage:{meera:1}},res:'You press random keys until she gently takes the laptop back. "Please don\'t." She\'s Meera — and she\'s not impressed.',expr:'confused'}}]});
+CE('meera','s1',{rep:1,cond:()=>C('meera').stage===1&&C('meera').talks>=2&&C('meera').aff>=12&&cdOk('meera_s1cd'),title:'A favor on a deadline',desc:'Meera\'s courier cancelled. A prototype must reach a client across town within two hours.',
+ text:'"I hate asking. But you ride a bike, right? I\'ll pay the standard rate."',ch:[
+ {t:'Deliver it right now',sub:'2h · −20 energy · +₹300',req:{energy:20,hours:2},eff:{energy:-20,hours:2,cash:300,dep:2,rel:{meera:{aff:6,trust:10}},stage:{meera:2},flags:{meera_favor:1}},res:'You arrive with four minutes to spare. Meera texts: "Reliable. I like that." Friends.',expr:'happy'},
+ {t:'Decline honestly — you\'re overloaded',eff:{rel:{meera:{trust:3,aff:-2}},fn:s=>{s.flags.meera_s1cd=s.day+3}},res:'"Thanks for being straight with me." She finds someone else — this time.',expr:'neutral'}]});
+CE('meera','s2',{rep:1,cond:()=>C('meera').stage===2&&!F('meera_friends')&&C('meera').aff>=35&&C('meera').trust>=30&&cdOk('meera_s2cd'),title:'Going solo',desc:'Meera\'s cofounder has quit. She sketches a business plan on a napkin.',
+ text:'"Part of me wants to build this alone. Part of me wants to run back to a safe job. Talk me out of one."',ch:[
+ {t:'Help her stress-test the plan, number by number',sub:'Needs INT 15',req:{int:15},eff:{hours:2,int:2,rel:{meera:{aff:8,trust:10}},stage:{meera:3}},res:'Two hours and three napkins later, the plan works. "You actually did the math." She looks at you differently now.',expr:'happy'},
+ {t:'Tell her to take the safe job',eff:{rel:{meera:{trust:-5,fru:8}},fn:s=>{s.flags.meera_s2cd=s.day+3}},res:'"Safe. Right." She folds the napkin very small.',expr:'sad'}]});
+CE('meera','confess',{rep:1,cond:()=>C('meera').stage===3&&C('meera').aff>=55&&C('meera').trust>=45&&C('meera').dates>=1,title:'Unscheduled',desc:'Meera closes her laptop — a rare event — and turns to face you.',
+ text:'"I schedule everything. Except whatever this is between us."',ch:[
+ {t:'Tell her you\'d like to make it official',req:{fn:noOther('meera')},eff:{rel:{meera:{aff:10,trust:6}},stage:{meera:4}},res:'"Good. I was going to put it on the agenda." You\'re dating Meera.',expr:'happy',rec:'Started dating Meera'},
+ {t:'Say you value her as a friend and ally',eff:{rel:{meera:{trust:5}},stage:{meera:2},flags:{meera_friends:1}},res:'"Clear communication. I respect that." She means it.',expr:'neutral',rec:'Stayed allies with Meera'}]});
+CE('meera','s3',{rep:1,cond:()=>C('meera').stage===4&&C('meera').aff>=75&&C('meera').trust>=65&&C('meera').dates>=3&&cdOk('meera_s3cd'),title:'The funding offer',desc:'Investors offer Meera seed funding — on her terms.',
+ text:'"This is my company and my call. But I want to know where you stand."',ch:[
+ {t:'"Your company, your call. I\'m with you either way."',eff:{rel:{meera:{aff:10,trust:12}},stage:{meera:5}},res:'She exhales. "That\'s exactly the answer." You\'re committed.',expr:'happy',rec:'Committed to Meera'},
+ {t:'Offer to take over her finances',eff:{rel:{meera:{trust:-10,fru:15}},fn:s=>{s.flags.meera_s3cd=s.day+3}},res:'"I don\'t need rescuing." The temperature drops ten degrees.',expr:'angry'}]});
+// Sana
+CE('sana','meet',{cond:()=>!C('sana').stage,title:'Photobomb',desc:'A woman in a coral beanie crouches by a faded mural — and you walk right into her shot.',
+ text:'"You just photobombed a forty-year-old mural. Bold."',ch:[
+ {t:'Apologize and ask what she\'s capturing',eff:{rel:{sana:{aff:6,int:8}},stage:{sana:1}},res:'"The city keeps painting over its stories. I photograph them first." She\'s Sana.',expr:'happy'},
+ {t:'Strike a ridiculous pose',eff:{happy:3,rel:{sana:{aff:5,int:3}},stage:{sana:1}},res:'She snaps it anyway. "Terrible. I\'m keeping it." She\'s Sana.',expr:'happy'}]});
+CE('sana','s1',{rep:1,cond:()=>C('sana').stage===1&&C('sana').talks>=2&&C('sana').aff>=12&&cdOk('sana_s1cd'),title:'The photo request',desc:'Sana needs a second pair of hands for a long-exposure shot of the old SwiftLine wall.',
+ text:'"Patience is the whole trick. Want to look through my archive while we wait for the light?"',ch:[
+ {t:'Wait patiently and look through her archive',sub:'2h · −10 energy',req:{hours:2,energy:10},eff:{hours:2,energy:-10,rel:{sana:{aff:6,trust:8,int:5}},stage:{sana:2},items:{ev_photo:1},flags:{sana_s1_done:1}},res:'In an old shot you spot Kade handing a "KD — permits" folder to a depot manager. Sana prints you a copy. Evidence found! You\'re friends now.',expr:'happy',rec:'Found Kade in Sana\'s photo archive'},
+ {t:'Leave early — you have errands',eff:{rel:{sana:{trust:-3}},fn:s=>{s.flags.sana_s1cd=s.day+2}},res:'"Sure." She turns back to her viewfinder.',expr:'neutral'}]});
+CE('sana','s2',{rep:1,cond:()=>C('sana').stage===2&&!F('sana_friends')&&C('sana').aff>=35&&C('sana').trust>=30&&cdOk('sana_s2cd'),title:'The gallery submission',desc:'The city gallery wants submissions for "Hidden Corners". Sana\'s portfolio is ready. She isn\'t.',
+ text:'"What if they hate it? What if they\'re right?"',ch:[
+ {t:'Help her choose her three strongest prints',eff:{hours:1,pop:2,rel:{sana:{aff:8,trust:10}},stage:{sana:3}},res:'You spread the prints across the grass and argue happily for an hour. She submits. "Thank you for actually looking."',expr:'happy'},
+ {t:'Tell her to just post them online for likes',eff:{rel:{sana:{trust:-5,fru:8}},fn:s=>{s.flags.sana_s2cd=s.day+3}},res:'"It\'s not about likes." She zips up her bag.',expr:'sad'}]});
+CE('sana','confess',{rep:1,cond:()=>C('sana').stage===3&&C('sana').aff>=55&&C('sana').trust>=45&&C('sana').dates>=1,title:'Developing feelings',desc:'In Sana\'s tiny darkroom, a photo of you slowly appears in the tray.',
+ text:'"I didn\'t plan on taking so many pictures of you."',ch:[
+ {t:'Tell her you\'d like to be in all of them',req:{fn:noOther('sana')},eff:{rel:{sana:{aff:10,trust:6}},stage:{sana:4}},res:'She laughs under the red light. "Cheesy. Accepted." You\'re dating Sana.',expr:'happy',rec:'Started dating Sana'},
+ {t:'Say you\'d like to stay friends',eff:{rel:{sana:{trust:4}},stage:{sana:2},flags:{sana_friends:1}},res:'"Then you\'re my favorite subject. As a friend." She means it.',expr:'neutral',rec:'Stayed friends with Sana'}]});
+CE('sana','s3',{rep:1,cond:()=>C('sana').stage===4&&C('sana').aff>=75&&C('sana').trust>=65&&C('sana').dates>=3&&cdOk('sana_s3cd'),title:'Opening night',desc:'Sana\'s photos hang in the gallery — including one of your father\'s bicycle.',
+ text:'"I put a piece of your story on the wall. Is that okay?"',ch:[
+ {t:'Tell her it\'s perfect — and you\'re all in',eff:{pop:4,rel:{sana:{aff:10,trust:10}},stage:{sana:5}},res:'She squeezes your hand under the gallery lights. You\'re committed.',expr:'happy',rec:'Committed to Sana'},
+ {t:'Say it feels too personal',eff:{rel:{sana:{trust:-6}},fn:s=>{s.flags.sana_s3cd=s.day+3}},res:'"Oh. I\'ll… take it down." She looks crushed.',expr:'sad'}]});
+
+/* ---------------- Generated events (special mechanics) ---------------- */
+const DESTS=['a dentist across the river','a wedding hall on Hill Road','a hostel near the college','a bakery that needs flour NOW','a grandmother waiting for medicine'];
+const CUSTOMERS=[
+ {t:'A customer wants to return an opened bag of rice without a receipt.',a:'Politely explain the policy and offer a discount coupon',b:'Refund it to avoid a scene',g:0},
+ {t:'An elderly man can\'t read the tiny price labels.',a:'Read them aloud and walk him through the aisle',b:'Point to the sign and move on',g:0},
+ {t:'Two customers argue over the last bag of mangoes.',a:'Split the bag and offer both a small discount',b:'Give it to whoever shouts loudest',g:0},
+ {t:'A kid tries to pay with toy money.',a:'Kindly explain and call their parent over',b:'Laugh at them in front of everyone',g:0}];
+const GEN={
+ say:p=>({title:p.title||'',sp:p.sp,chars:p.chars||[[p.sp,p.ex||'talk']],desc:'',text:'',ch:[]}),
+ interview:({j})=>{const I=INTERVIEWS[j],J=JOBS[j];const mk=o=>({t:o.t,sub:o.sub,run:()=>{const ok=o.ok();Career.ensure(j);
+   if(ok)return {eff:{hire:j,hon:o.lie?-2:0,cha:1,rel:j==='analyst'&&C('meera').stage?{meera:{trust:5}}:null,hours:1},res:`${PEOPLE[I.who].name} nods. "You\'re hired."${o.lie?' (You bluffed — and got away with it this time.)':''}`,expr:'happy'};
+   S.jobs[j].cd=S.day+1;return {eff:{hours:1,happy:-4,hon:o.lie?-2:0},res:`${PEOPLE[I.who].name} shakes your head. "Not this time." You can re-apply tomorrow.`,expr:'confused'};}});
+  return {title:`Job interview — ${J.n}`,sp:I.who,chars:[[I.who,'talk']],desc:`Interview for ${J.n} (${fmt(J.pay)} per shift).`,text:I.q,ch:[mk(I.a),mk(I.b)]};},
+ route:()=>{const lv=Career.level('delivery'),pay=JOBS.delivery.pay+(lv-1)*JOBS.delivery.lvl,dest=DESTS[(S.day+S.hour)%DESTS.length],fastEn=S.str>=15?22:30;
+  return {title:'Delivery run',sp:'hari',chars:[['player','neutral'],['hari','talk']],desc:`🗺️ ROUTE CARD — Parcel for ${dest}. Base pay ${fmt(pay)} (Delivery Lv ${lv}).`,text:'"Two ways to get there, rider. Fast and sweaty or slow and steady. Your call."',ch:[
+  {t:'🏁 Fast route over the flyover',sub:`2h · −${fastEn} energy · +50% pay if STR ≥ 10`,req:{energy:fastEn,hours:2},run:()=>{const ok=S.str>=10,p=ok?Math.round(pay*1.5):pay;return {eff:{energy:-fastEn,hours:2,cash:p,str:1,xp:{delivery:1},fn:()=>Career.done('delivery')},res:ok?`You fly over the flyover and arrive early. ${fmt(p)} including a tip!`:`Your legs give out halfway up the flyover. You arrive late — base pay ${fmt(p)} only.`,expr:ok?'happy':'sad'};}},
+  {t:'🛣️ Safe route via the main road',sub:'3h · −16 energy · base pay, happy customer',req:{energy:16,hours:3},run:()=>({eff:{energy:-16,hours:3,cash:pay,dep:1,xp:{delivery:1},fn:()=>Career.done('delivery')},res:`Slow, steady, on time. The customer thanks you warmly. ${fmt(pay)} earned.`,expr:'happy'})}]};},
+ customer:()=>{const c=CUSTOMERS[(S.day*3+S.hour)%CUSTOMERS.length],lv=Career.level('shop'),pay=JOBS.shop.pay+(lv-1)*JOBS.shop.lvl;
+  const good={t:c.a,run:()=>({eff:{energy:-JOBS.shop.en,hours:3,cash:pay+60,cha:1,dep:1,xp:{shop:1},fn:()=>Career.done('shop')},res:`The customer leaves smiling. Gopal slips you a ₹60 bonus. Total ${fmt(pay+60)}.`,expr:'happy'})};
+  const bad={t:c.b,run:()=>({eff:{energy:-JOBS.shop.en,hours:3,cash:pay,dep:-1,happy:-2,xp:{shop:1},fn:()=>Career.done('shop')},res:`Gopal frowns. "That\'s not how we treat people here." You still earn ${fmt(pay)}.`,expr:'sad'})};
+  return {title:'Shop shift — customer service',sp:'gopal',chars:[['player','neutral'],['gopal','talk']],desc:`Shift pay ${fmt(pay)} (Shop Lv ${lv}). 3h, −${JOBS.shop.en} energy.`,text:c.t,ch:S.day%2?[good,bad]:[bad,good]};},
+ cafeShift:()=>{const lv=Career.level('cafe'),pay=JOBS.cafe.pay+(lv-1)*JOBS.cafe.lvl,met=C('riya').stage>0;
+  return {title:'Café shift',sp:'rosa',chars:[['player','neutral'],['rosa','talk']],desc:`Shift pay ${fmt(pay)} (Café Lv ${lv}). 4h.`,text:'"Morning rush incoming! How do you want to play it today?"',ch:[
+  {t:'Focus hard on orders and speed',sub:`−${JOBS.cafe.en+6} energy · +₹80 tips · +Reliability`,run:()=>({eff:{energy:-(JOBS.cafe.en+6),hours:4,cash:pay+80,dep:1,xp:{cafe:1},fn:()=>Career.done('cafe')},res:`Not a single wrong order. Rosa is impressed. ${fmt(pay+80)} with tips.`,expr:'happy'})},
+  {t:'Chat with regulars and coworkers',sub:`−${JOBS.cafe.en} energy · +CHA +POP${met?' · Riya':''}`,run:()=>({eff:{energy:-JOBS.cafe.en,hours:4,cash:pay,cha:1,pop:1,xp:{cafe:1},rel:met?{riya:{aff:3,int:2}}:null,fn:()=>Career.done('cafe')},res:`The regulars love you. ${met?'Riya keeps sneaking you terrible jokes. ':''}${fmt(pay)} earned.`,expr:'happy'})}]};},
+ project:()=>{const q=900+S.int*25,sp=500+S.int*12;
+  return {title:'Freelance project',sp:'player',chars:[['player','confused']],desc:'A client wants a logo for their tiffin service.',text:'Quality takes time. Speed pays now, but sloppy work can cost you.',ch:[
+  {t:'Focus on quality',sub:`4h · −28 energy · invoice ${fmt(q)} paid tomorrow`,req:{energy:28,hours:4},run:()=>({eff:{energy:-28,hours:4,dep:1,int:1,xp:{freelance:1},fn:()=>{S.pending.push({amt:q,what:'Freelance invoice'});Career.done('freelance');}},res:`The client loves it. Invoice of ${fmt(q)} will be paid tomorrow morning.`,expr:'happy'})},
+  {t:'Work fast',sub:`2h · −18 energy · ${fmt(sp)} now (INT < 25 risks revisions)`,req:{energy:18,hours:2},run:()=>{const ok=S.int>=25,p=ok?sp:Math.round(sp*.7);return {eff:{energy:-18,hours:2,cash:p,dep:ok?0:-1,xp:{freelance:1},fn:()=>Career.done('freelance')},res:ok?`Fast and clean. ${fmt(p)} paid on the spot.`:`The client finds mistakes and cuts the fee to ${fmt(p)}.`,expr:ok?'happy':'sad'};}}]};},
+ shift:({j})=>{const J=JOBS[j],lv=Career.level(j),pay=J.pay+(lv-1)*J.lvl;
+  return {title:`${J.n} shift`,sp:J.boss,chars:[['player','neutral'],[J.boss,'talk']],desc:`Shift pay ${fmt(pay)} (Lv ${lv}). ${J.h}h.`,text:'"Busy day. Want to step up, or keep it steady?"',ch:[
+  {t:'Take on extra responsibility',sub:`−${J.en+8} energy · +25% pay · double XP`,req:{energy:J.en+8},run:()=>({eff:{energy:-(J.en+8),hours:J.h,cash:Math.round(pay*1.25),dep:1,xp:{[j]:2},fn:()=>Career.done(j)},res:`You lead the team through the chaos. ${fmt(pay*1.25)} earned.`,expr:'happy'})},
+  {t:'Work a standard shift',sub:`−${J.en} energy`,run:()=>({eff:{energy:-J.en,hours:J.h,cash:pay,xp:{[j]:1},fn:()=>Career.done(j)},res:`Solid, uneventful work. ${fmt(pay)} earned.`,expr:'neutral'})}]};},
+ talk:({c,f,g,o})=>{const D=CHARD[c],n=PEOPLE[c].name,R=C(c),insight=S.cha>=15||R.talks>=3;
+  const done=()=>{S.today.talk[c]=1;R.talks++;};
+  const good={t:D.good[g],sub:insight?'💡 She seems to care about this':'',run:()=>{done();return {eff:{hours:1,energy:-3,cha:1,rel:{[c]:{aff:4,trust:2,int:4}}},res:`${n} lights up. The conversation flows easily.`,expr:'happy'};}};
+  const bad={t:D.bad[g],run:()=>{done();return {eff:{hours:1,energy:-3,rel:{[c]:{aff:1,int:-2,fru:3}}},res:`${n} nods politely, but her attention drifts.`,expr:'confused'};}};
+  return {title:`Talking with ${n}`,sp:c,chars:[['player','neutral'],[c,'talk']],desc:`What will you talk about? (1h)`,text:D.open[o],ch:f?[good,bad]:[bad,good]};},
+ hang:({c,f})=>{const D=CHARD[c],n=PEOPLE[c].name;const done=()=>{S.today.hang[c]=1;};
+  const good={t:D.hang[0],sub:'₹150 · 2h',run:()=>{done();return {eff:{cash:-150,hours:2,energy:-10,happy:5,rel:{[c]:{aff:5,trust:4,int:3}}},res:`A perfect afternoon. ${n} is still laughing about it when you part ways.`,expr:'happy'};}};
+  const bad={t:D.hang[1],sub:'₹150 · 2h',run:()=>{done();return {eff:{cash:-150,hours:2,energy:-10,happy:2,rel:{[c]:{aff:1,fru:2}}},res:`${n} is a good sport, but it clearly wasn\'t her thing.`,expr:'confused'};}};
+  return {title:`Hanging out with ${n}`,sp:c,chars:[['player','happy'],[c,'talk']],desc:'Friends make plans. What do you suggest?',text:`"I\'m free for a couple of hours. What should we do?"`,ch:f?[good,bad]:[bad,good]};},
+ date:({c,f})=>{const D=CHARD[c].date,n=PEOPLE[c].name,R=C(c);const done=()=>{R.dates++;R.lastDate=S.day;};
+  const good={t:D.g,run:()=>{done();return {eff:{cash:-400,hours:3,energy:-15,happy:8,rel:{[c]:{aff:8,trust:6,int:6}}},res:`The evening glows. ${n} leans her head on your shoulder on the way back.`,expr:'happy'};}};
+  const bad={t:D.b,run:()=>{done();return {eff:{cash:-400,hours:3,energy:-15,rel:{[c]:{aff:2,fru:6,int:-3}}},res:`${n} goes quiet for the rest of the night. Not your best evening.`,expr:'sad'};}};
+  return {title:`Date — ${D.t}`,sp:c,bg:D.bg,chars:[['player','happy'],[c,'happy']],desc:D.d+' (₹400 · 3h)',text:`"I\'m really glad we did this."`,ch:f?[good,bad]:[bad,good]};},
+ decline:({c,r})=>{const n=PEOPLE[c].name;return {title:`${n} declines`,sp:c,chars:[['player','sad'],[c,'confused']],desc:'Every person has boundaries.',text:r,ch:[
+  {t:'Respect it and say goodnight',eff:{rel:{[c]:{trust:3}},dep:1},res:`"Thanks for understanding." ${n} smiles. That counted for something.`,expr:'happy'},
+  {t:'Push a little harder',eff:{rel:{[c]:{fru:12,trust:-5}}},res:`"I said no." ${n} walks away. Pushing never helps.`,expr:'angry'}]};},
+ social:()=>({title:'Community Night',sp:'kamala',chars:[['player','neutral'],['kamala','happy']],desc:'Fairy lights, samosas, a karaoke machine of questionable quality. (3h, −15 energy)',text:'"So many people tonight! What will you do?"',ch:[
+  {t:'Speak to a new group of people',sub:'+CHA +POP',eff:{hours:3,energy:-15,cha:2,pop:5,happy:5,flags:{attended_event:1,social_cd:S.day+3}},res:'You end up leading the karaoke queue. Half the neighborhood now knows your name.',expr:'happy'},
+  {t:'Help the organizer behind the scenes',sub:'+Reliability +₹200',eff:{hours:3,energy:-15,dep:2,pop:3,cash:200,flags:{attended_event:1,social_cd:S.day+3}},res:'Kamala calls you "the only one who can carry a table properly" and presses ₹200 into your hand.',expr:'happy'}]}),
+ supplier:()=>({title:'Business — supplier offer',sp:'iyer',chars:[['player','confused'],['iyer','talk']],desc:`Your ${BIZ[S.biz.type].n} needs a supplier contract.`,text:'"Two suppliers came by. Cheap and shaky, or premium and steady. Choose wisely."',ch:[
+  {t:'Premium supplier',sub:'+15% operating cost · business reputation rises daily',eff:{fn:s=>{s.biz.supplier='quality'}},res:'Customers notice the better ingredients. Reputation will grow each day.',expr:'happy'},
+  {t:'Budget supplier',sub:'−20% operating cost · reputation erodes daily',eff:{fn:s=>{s.biz.supplier='budget'}},res:'Costs drop… but so does quality. Watch your reputation.',expr:'confused'}]}),
+ contract:()=>({title:'Business — big contract',sp:'iyer',chars:[['player','confused'],['iyer','talk']],desc:'A corporate client wants a rush order.',text:'"₹3,000 upfront, but you\'ll be working all night to deliver. Take it?"',ch:[
+  {t:'Accept the contract',sub:'+₹3,000 · −25 energy · 3h',req:{energy:25,hours:3},eff:{cash:3000,energy:-25,hours:3,fn:s=>{s.biz.rep=clamp(s.biz.rep+5,0,100)}},res:'You deliver at dawn. The client promises repeat business.',expr:'happy'},
+  {t:'Decline — protect your energy',eff:{happy:2},res:'"Knowing your limits is a business skill too," Mr. Iyer says.',expr:'neutral'}]})
+};
+
+/* ---------------- DecisionEngine & EventManager ---------------- */
+const Ev={
+ get(st){if(!st)return null;try{if(st.gen)return GEN[st.gen]?GEN[st.gen](st.p||{}):null;}catch(e){return null;}return EVENTS[st.id]||null;},
+ start(x){
+  if(typeof x==='string'&&x.startsWith('@')){const [g,a]=x.slice(1).split('|');S.ev={gen:g,p:{j:a}};}
+  else if(typeof x==='string')S.ev={id:x};
+  else S.ev=x;
+  if(!Ev.get(S.ev))S.ev=null;
+  UI.sceneKey='';
+ },
+ next(){while(S.queue.length){const id=S.queue.shift();const e=EVENTS[id];if(e&&(e.rep||!S.done[id])){Ev.start(id);return true;}}return false;},
+ scan(){
+  if(S.ev||S.ending)return false;
+  for(const id in EVENTS){const e=EVENTS[id];if(e.trig!=='arrive')continue;
+   if(e.loc!=='*'&&e.loc!==S.loc)continue;if(e.per&&!e.per.includes(P()))continue;if(S.hour>=23)continue;
+   if(!e.rep&&S.done[id])continue;
+   try{if(e.cond&&!e.cond())continue;}catch(err){continue;}
+   Ev.start(id);return true;}
+  return false;},
+ dayScan(){for(const id in EVENTS){const e=EVENTS[id];if(e.trig!=='day'||(!e.rep&&S.done[id])||S.queue.includes(id))continue;try{if(e.cond&&e.cond())S.queue.push(id);}catch(err){}}}
+};
+const Dec={
+ blocked(ch){const r=ch.req;if(!r)return '';
+  for(const k of ['int','cha','str','pop','energy'])if(r[k]!=null&&S[k]<r[k])return `Requires ${k==='energy'?'ENERGY':STATN[k]} ${r[k]}`;
+  if(r.cash!=null&&S.cash<r.cash)return `Requires ${fmt(r.cash)} cash`;
+  if(r.hours&&S.hour+r.hours>24)return 'Not enough time left today';
+  if(r.item&&!has(r.item))return `Requires: ${ITEMS[r.item].n}`;
+  if(r.flag&&!F(r.flag))return 'Not available yet';
+  if(r.fn)return r.fn()||'';
+  return '';},
+ lock:false,
+ choose(i){
+  const st=S.ev;if(!st||st.res||Dec.lock)return;
+  const ev=Ev.get(st);const ch=ev&&ev.ch[i];if(!ch)return;
+  const why=Dec.blocked(ch);if(why){UI.toast(why,'info');Sound.bad();return;}
+  Dec.lock=true;
+  let out={eff:ch.eff,res:ch.res||'',next:ch.next||null,expr:ch.expr||'neutral',end:false,rec:ch.rec};
+  if(ch.run)Object.assign(out,ch.run()||{});
+  st.res={text:out.res,chips:[],next:out.next,expr:out.expr,end:!!out.end,pick:i};
+  if(st.id&&!ev.rep)S.done[st.id]=1;
+  if(out.rec)S.decisions.push(`Day ${S.day}: ${out.rec}`);
+  const chips=Player.apply(out.eff);
+  st.res.chips=chips;
+  if(chips.some(c=>c.c==='neg')&&!chips.some(c=>c.c==='pos'||c.c==='gold'))Sound.bad();else Sound.click();
+  if(chips.some(c=>c.t.startsWith('+₹')))UI.burst(chips.find(c=>c.t.startsWith('+₹')).t.split(' ')[0]);
+  Game.after(true);
+  setTimeout(()=>{Dec.lock=false},250);
+ },
+ cont(){const st=S.ev;if(!st||!st.res)return;const r=st.res;S.ev=null;
+  if(r.end){Game.finish();return;}
+  if(r.next)Ev.start(r.next);
+  Game.after();}
+};
+
+/* ---------------- Time ---------------- */
+const Time={
+ adv(h){S.hour=Math.min(24,S.hour+h);},
+ sleep(){
+  if(S.ev)return;
+  if(S.loc!=='home'){S.loc='home';}
+  const lines=Time.newDay();
+  UI.modal(`<h2>🌅 Day ${S.day} — Good morning</h2>${lines.map(l=>`<div class="kv"><span>${l[0]}</span><b class="${l[2]||''}">${l[1]}</b></div>`).join('')}<div class="mrow"><button class="btn" data-act="closeModal">Start the day</button></div>`);
+  Game.after();
+ },
+ newDay(){
+  const L=[];
+  S.day++;S.hour=7;
+  // living expenses
+  const cost=120;let paid=Math.min(S.cash,cost);S.cash-=paid;let rest=cost-paid;const fromBank=Math.min(S.bank,rest);S.bank-=fromBank;rest-=fromBank;
+  if(rest>0){S.skipMeal=true;S.happy=clamp(S.happy-6,0,100);L.push(['🍛 Living expenses',`Short by ${fmt(rest)} — skipped meals (energy capped at 70, −6 happiness)`,'neg-t']);}
+  else{S.skipMeal=false;L.push(['🍛 Living expenses (food, bus, bills)',`−${fmt(cost)}`,'neg-t']);}
+  S.energy=S.skipMeal?70:100;
+  // pending income
+  S.pending.forEach(p=>{S.cash+=p.amt;S.earned+=p.amt;L.push([`💸 ${p.what}`,`+${fmt(p.amt)}`,'pos-t']);});S.pending=[];
+  // business
+  if(S.biz)L.push(...Biz.day());
+  // interest
+  if(S.bank>=100){const it=Math.floor(S.bank*.002);if(it){S.bank+=it;L.push(['🏦 Savings interest (0.2%)',`+${fmt(it)}`,'pos-t']);}}
+  // installment
+  if(S.debt>0&&S.day>S.dueDay){const due=Math.min(S.dueAmt,S.debt+S.paidWeek);
+   if(S.paidWeek>=due)L.push(['⛓ Weekly installment','Paid on time ✔','pos-t']);
+   else{S.debt+=1500;S.missed++;S.happy=clamp(S.happy-10,0,100);L.push(['⛓ Weekly installment MISSED','+₹1,500 penalty, −10 happiness','neg-t']);S.queue.unshift('kade_missed');}
+   S.dueDay+=7;S.paidWeek=0;}
+  if(S.debt>0)L.push(['📅 Next installment',`${fmt(Math.min(S.dueAmt,S.debt))} by end of Day ${S.dueDay}`]);
+  // relationships & daily resets
+  ROMANCE.forEach(c=>{S.chars[c].fru=Math.max(0,S.chars[c].fru-5);});
+  S.today={talk:{},gift:{},hang:{},jobs:{},misc:{}};
+  if(F('argued_kade')&&!has('ev_notice')&&S.day>=3&&!F('notice_sent')){S.inv.ev_notice=1;S.flags.notice_sent=1;Phone.push('Mr. Kade','Since you asked so loudly: a copy of your father\'s loan notice is in your mailbox. Pay on time.');L.push(['📄 Kade mailed the Debt Notice','Evidence added','pos-t']);}
+  if(S.biz&&S.biz.days>0&&S.biz.days%5===0)S.queue.push('@supplier');
+  if(S.biz&&S.biz.level>=2&&!F('contract_offered')){S.flags.contract_offered=1;S.queue.push('@contract');}
+  if(S.day===35&&!S.ending)Phone.push('Mr. Kade','Five days left. Day 40 is final. No more excuses.');
+  Ev.dayScan();
+  L.push(['⚡ Energy',`${S.energy}/100`]);
+  return L;
+ }
+};
+// queue entries starting with '@' are generated events
+const _next=Ev.next;Ev.next=function(){if(S.queue.length&&S.queue[0].startsWith('@')){const g=S.queue.shift().slice(1);if(S.biz||!['supplier','contract'].includes(g)){S.ev={gen:g,p:{}};UI.sceneKey='';return true;}return Ev.next();}return _next();};
+
+/* ---------------- Economy / Phone ---------------- */
+const Eco={
+ repay(amt){amt=Math.floor(Math.min(amt,S.cash,S.debt));if(amt<=0){UI.toast('Nothing to repay — need cash on hand and remaining debt','info');return;}
+  S.cash-=amt;S.debt-=amt;S.paidTotal+=amt;S.paidWeek+=amt;
+  UI.toast(`−${fmt(amt)} CASH — DEBT REPAYMENT`,'neg');UI.toast(`DEBT NOW ${fmt(S.debt)}`,'pos');Sound.money();
+  if(S.debt===0){S.flags.debt_free=1;UI.toast('★ DEBT CLEARED!','gold');Sound.quest();}
+  Game.after();},
+ deposit(amt){amt=Math.floor(Math.min(amt,S.cash));if(amt<=0)return UI.toast('No cash to deposit','info');S.cash-=amt;S.bank+=amt;UI.toast(`${fmt(amt)} moved to BANK`,'info');Sound.click();Game.after();},
+ withdraw(amt){amt=Math.floor(Math.min(amt,S.bank));if(amt<=0)return UI.toast('No savings to withdraw','info');S.bank-=amt;S.cash+=amt;UI.toast(`${fmt(amt)} withdrawn to CASH`,'info');Sound.click();Game.after();},
+ buy(item){const it=ITEMS[item];if(!it||!it.price)return;if(it.shop!==S.loc)return UI.toast(`Sold at ${LOCS[it.shop].n}`,'info');
+  if(S.cash<it.price){Sound.bad();return UI.toast(`Need ${fmt(it.price)} cash`,'neg');}
+  if(it.t==='key'&&has(item))return UI.toast('You already own this','info');
+  S.cash-=it.price;S.inv[item]=(S.inv[item]||0)+1;UI.toast(`−${fmt(it.price)} CASH — BOUGHT ${it.n.toUpperCase()}`,'neg');Sound.click();Game.after();}
+};
+const Phone={push(from,text){S.msgs.unshift({from,text,day:S.day,read:false});if(S.msgs.length>40)S.msgs.pop();UI.toast(`📱 New message from ${from}`,'info');Sound.note();}};
+
+/* ---------------- CareerManager ---------------- */
+const Career={
+ ensure(j){if(!S.jobs[j])S.jobs[j]={hired:false,xp:0,cd:0};},
+ hire(j){Career.ensure(j);S.jobs[j].hired=true;},
+ level(j){return S.jobs[j]?Math.min(5,1+Math.floor(S.jobs[j].xp/6)):1;},
+ done(j){S.today.jobs[j]=(S.today.jobs[j]||0)+1;},
+ reqWhy(j){const r=JOBS[j].req;
+  if(r.item&&!has(r.item))return `Needs ${ITEMS[r.item].n}`;
+  if(r.flag&&!F(r.flag))return 'Finish the design course (Community Center)';
+  for(const k of ['int','cha','str'])if(r[k]&&S[k]<r[k])return `Needs ${STATN[k]} ${r[k]}`;
+  if(j==='courier'&&!S.unlocked.includes('workplace'))return 'Unlock SwiftLine Depot';
+  if(j==='analyst'&&!S.unlocked.includes('business'))return 'Unlock the Business District';
+  return '';},
+ workWhy(j){const J=JOBS[j];if(!hired(j))return 'Not hired';
+  if(S.loc!==J.loc)return `Go to ${LOCS[J.loc].n}`;
+  if((S.today.jobs[j]||0)>=J.limit)return `Daily limit reached (${J.limit})`;
+  if(S.hour<J.open[0]||S.hour>=J.open[1])return `Shifts start ${hm(J.open[0])}–${hm(J.open[1]-1)}`;
+  if(S.hour+J.h>24)return 'Not enough time today';
+  if(S.energy<J.en)return `Needs ${J.en} energy`;
+  return '';},
+ work(j){const w=Career.workWhy(j);if(w){UI.toast(w,'info');Sound.bad();return;}
+  const g={delivery:'route',shop:'customer',cafe:'cafeShift',freelance:'project'}[j]||'shift';
+  Ev.start({gen:g,p:{j}});Game.after();},
+ apply(j){const w=Career.reqWhy(j);if(w){UI.toast(w,'info');Sound.bad();return;}
+  Career.ensure(j);
+  if(S.jobs[j].cd>S.day){UI.toast('You can re-apply tomorrow','info');return;}
+  if(S.loc!==JOBS[j].loc){UI.toast(`Interviews happen at ${LOCS[JOBS[j].loc].n}`,'info');return;}
+  if(j==='delivery'){Ev.start('hari_signup');S.done.hari_signup=0;}
+  else if(j==='freelance'){Career.hire('freelance');UI.toast('HIRED — FREELANCE DESIGNER (work from home)','gold');Sound.quest();}
+  else Ev.start({gen:'interview',p:{j}});
+  UI.closeSheet();Game.after();}
+};
+
+/* ---------------- BusinessManager ---------------- */
+const Biz={
+ start(t){const B=BIZ[t];if(S.biz)return UI.toast('You already run a business','info');if(!F('met_iyer'))return UI.toast('Meet Mr. Iyer in the Business District first','info');
+  const r=B.req();if(r)return UI.toast(r,'info');if(S.cash<B.cost){Sound.bad();return UI.toast(`Startup needs ${fmt(B.cost)} in cash (withdraw from bank via PHONE)`,'neg');}
+  S.cash-=B.cost;S.biz={type:t,level:1,rep:50,days:0,supplier:'standard',boost:false,total:0,last:null};
+  UI.toast(`−${fmt(B.cost)} CASH — STARTUP COST`,'neg');UI.toast(`★ BUSINESS OPENED — ${B.n.toUpperCase()}`,'gold');Sound.quest();S.decisions.push(`Day ${S.day}: Opened a ${B.n}`);Game.after();},
+ calc(){const b=S.biz,B=BIZ[b.type];const v=.92+((S.day*37)%17)/100;
+  const rev=Math.round(B.rev(b)*v*(1+(b.rep-50)/200)*(b.boost?1.25:1)+S.dep*20);
+  const op=Math.round(B.op(b)*(b.supplier==='quality'?1.15:b.supplier==='budget'?.8:1));return {rev:Math.max(0,rev),op};},
+ day(){const b=S.biz,{rev,op}=Biz.calc(),profit=rev-op,L=[];
+  L.push([`${BIZ[b.type].i} ${BIZ[b.type].n} revenue`,`+${fmt(rev)}`,'pos-t'],['Operating costs',`−${fmt(op)}`,'neg-t']);
+  if(profit>=0){S.cash+=profit;S.earned+=profit;}
+  else{let need=-profit;const c=Math.min(S.cash,need);S.cash-=c;need-=c;const bk=Math.min(S.bank,need);S.bank-=bk;need-=bk;if(need>0){b.rep=clamp(b.rep-5,0,100);L.push(['Unpaid supplier bills',`${fmt(need)} — business reputation −5`,'neg-t']);}}
+  L.push(['Business profit',`${profit>=0?'+':'−'}${fmt(profit)}`,profit>=0?'pos-t':'neg-t']);
+  b.rep=clamp(b.rep+(b.supplier==='quality'?2:b.supplier==='budget'?-2:0),0,100);
+  b.last={rev,op,profit};b.total+=profit;b.days++;b.boost=false;return L;},
+ upgrade(){const b=S.biz;if(!b)return;if(b.level>=3)return UI.toast('Maximum level reached','info');const c=5000*b.level;if(S.cash<c){Sound.bad();return UI.toast(`Upgrade needs ${fmt(c)} cash`,'neg');}
+  S.cash-=c;b.level++;UI.toast(`−${fmt(c)} CASH — UPGRADE`,'neg');UI.toast(`★ BUSINESS LEVEL ${b.level}`,'gold');Sound.quest();Game.after();},
+ work(){const b=S.biz;if(!b)return;if(b.boost)return UI.toast('Already worked on the business today','info');if(S.energy<15)return UI.toast('Needs 15 energy','info');if(S.hour+2>24)return UI.toast('Not enough time today','info');
+  b.boost=true;Player.apply({energy:-15,hours:2,int:S.biz.type==='online'?1:0,str:S.biz.type==='riders'?1:0,cha:S.biz.type==='stand'?1:0});b.rep=clamp(b.rep+1,0,100);UI.toast('Tomorrow\'s revenue +25% (you worked the business)','info');Game.after();}
+};
+
+/* ---------------- Location actions ---------------- */
+const ACTS={
+ sleep:{loc:'home',i:'🛏️',n:'Sleep until morning',m:'Ends the day · pays daily costs',run:()=>Time.sleep(),noTime:1},
+ rest:{loc:'home',i:'🛋️',n:'Rest on the sofa',h:2,lim:2,m:'+25 energy, +2 happiness',eff:{energy:25,happy:2}},
+ study:{loc:'home',i:'📓',n:'Study with your notebook',h:2,en:12,lim:2,m:'+INT (needs Notebook)',chk:()=>has('notebook')?'':'Needs Notebook',effFn:()=>({int:S.int<25?2:1})},
+ mom:{loc:'home',i:'👩',n:'Talk with Mom',h:1,lim:1,m:'+6 happiness',chk:()=>S.hour>=22?'Mom is asleep':'',effFn:()=>({happy:6}),say:()=>['mom',F('kept_watch')?'"Your father\'s watch suits you. Eat something, okay?"':'"Don\'t forget to eat. And call that nice neighbor back."']},
+ desk:{loc:'home',i:'🗄️',n:'Search Dad\'s desk',show:()=>!F('desk_done'),chk:()=>S.day<(F('desk_cd')||0)?'Too tired to read more today':'',ev:'desk',m:'Investigation · 2h'},
+ bike:{loc:'home',i:'🚲',n:'Inspect Dad\'s bicycle',show:()=>F('desk_done')&&!F('letter_alone')&&!F('letter_mom'),chk:()=>S.hour+1>24?'Not enough time':'',ev:'bike_letter',m:'Something rattles in the frame'},
+ gate:{loc:'home',i:'🔧',n:'Fix Auntie Kamala\'s gate',show:()=>F('met_kamala')&&!F('gate_fixed'),h:2,en:20,m:'Needs STR 12 · reward',chk:()=>S.str<12?'Needs STR 12':'',eff:{cash:300,dep:2,pop:2,items:{tiffin:2},flags:{gate_fixed:1}},say:()=>['kamala','"Look at that! Straight as an arrow. Take this money and two tiffins — no arguing!"']},
+ coffee:{loc:'cafe',i:'☕',n:'Buy a coffee',h:1,lim:2,m:()=>has('cafecard')&&!today('freecoffee')?'Free with staff card · +12 energy':'₹60 · +12 energy, +3 happiness',cost:()=>has('cafecard')&&!today('freecoffee')?0:60,effFn:()=>{if(has('cafecard')&&!today('freecoffee'))bump('freecoffee');return {energy:12,happy:3};}},
+ browse:{loc:'bookstore',i:'📖',n:'Browse & read',h:2,en:5,lim:1,m:'+1 INT, +3 happiness',eff:{int:1,happy:3}},
+ shopbooks:{loc:'bookstore',i:'🛍️',n:'Buy books & gifts',m:'Opens the shop',run:()=>UI.open('shop'),noTime:1},
+ jog:{loc:'park',i:'🏃',n:'Jog around the lake',h:1,en:12,lim:2,m:'+1 STR, +4 happiness',chk:()=>S.hour>=22?'Too dark to jog':'',eff:{str:1,happy:4}},
+ relax:{loc:'park',i:'🌳',n:'Relax under the banyan',h:1,lim:2,m:'+8 energy, +6 happiness',eff:{energy:8,happy:6}},
+ search:{loc:'park',i:'🔎',n:'Search for Riya\'s notebook',show:()=>F('riya_lost')&&!has('setlist')&&!F('setlist_returned'),h:1,en:5,m:'Optional quest',eff:{items:{setlist:1}},say:()=>['player','Under a bench by the bandstand: a purple notebook covered in stickers. Found it!']},
+ shop:{loc:'market',i:'🛍️',n:'Browse market stalls',m:'Snacks, gifts, laptop',run:()=>UI.open('shop'),noTime:1},
+ investigate:{loc:'workplace',i:'🕵️',n:'Look for Dad\'s records',show:()=>F('met_farah')&&!has('ev_manifest')&&!F('manifest_found')&&!F('deal_path'),chk:()=>S.day<(F('depot_cd')||0)?'The foreman is watching — come back tomorrow':(S.hour+1>24?'Not enough time':''),ev:'depot_clue',m:'Investigation · 1h'},
+ workout:{loc:'gym',i:'🏋️',n:'Weight training',h:2,en:25,lim:1,cost:()=>60,m:'₹60 · +2 STR',effFn:()=>({str:S.str<30?2:1,happy:2})},
+ class:{loc:'gym',i:'🥊',n:'Group fitness class',h:2,en:20,lim:1,cost:()=>100,m:'₹100 · +STR +CHA +POP',eff:{str:1,cha:1,pop:1}},
+ course:{loc:'community',i:'🎓',n:'Design course session',show:()=>!F('course_done'),h:2,en:10,lim:1,cost:()=>200,m:()=>`₹200 · +2 INT · session ${(F('course_n')||0)+1}/3`,effFn:()=>{const n=(F('course_n')||0)+1;return {int:2,flags:n>=3?{course_n:n,course_done:1}:{course_n:n}};},post:()=>{if(F('course_done')&&!F('course_toast')){S.flags.course_toast=1;UI.toast('★ COURSE COMPLETE — FREELANCE DESIGN UNLOCKED (needs laptop + INT 18)','gold');}}},
+ speak:{loc:'community',i:'🎤',n:'Public speaking club',h:2,en:10,lim:1,cost:()=>100,m:'₹100 · +2 CHA',eff:{cha:2,happy:1}},
+ volunteer:{loc:'community',i:'🤝',n:'Volunteer at the food drive',h:2,en:15,lim:1,m:'Unpaid · +POP +Reliability',eff:{pop:3,dep:1,happy:3}},
+ social:{loc:'community',i:'🎉',n:'Join Community Night',chk:()=>P()!==2?'Evenings only':(S.day<(F('social_cd')||0)?`Next one on Day ${F('social_cd')}`:(S.energy<15?'Needs 15 energy':(S.hour+3>24?'Not enough time':''))),m:'Social event · 3h',evGen:'social'},
+ hearing:{loc:'business',i:'⚖️',n:'Attend the hearing (FINALE)',show:()=>!!F('truth_path')&&!S.ending,chk:()=>P()>1?'Hearings run mornings and afternoons':'',ev:'finale_truth',m:()=>`Ends the story · evidence ${evCount()}/5`},
+ bizpanel:{loc:'business',i:'📈',n:'Manage your business',m:'Business dashboard',run:()=>{UI.jobsTab='biz';UI.open('jobs');},noTime:1}
+};
+const Act={
+ why(a){if(a.noTime)return a.chk?a.chk():'';
+  if(a.h&&S.hour+a.h>24)return 'Not enough time today';
+  if(a.en&&S.energy<a.en)return `Needs ${a.en} energy`;
+  const cost=a.cost?a.cost():0;if(cost&&S.cash<cost)return `Needs ${fmt(cost)} cash`;
+  if(a.lim&&today(a.id)>=a.lim)return 'Done for today';
+  return a.chk?a.chk():'';},
+ list(){return Object.entries(ACTS).filter(([id,a])=>{a.id=id;return a.loc===S.loc&&(!a.show||a.show());});},
+ run(id){const a=ACTS[id];if(!a||a.loc!==S.loc||S.ev)return;a.id=id;const w=Act.why(a);if(w){UI.toast(w,'info');Sound.bad();return;}
+  if(a.run){a.run();return;}
+  if(a.ev){Ev.start(a.ev);Game.after();return;}
+  if(a.evGen){Ev.start({gen:a.evGen,p:{}});Game.after();return;}
+  const cost=a.cost?a.cost():0;const e=Object.assign({},a.eff||{},a.effFn?a.effFn():{});
+  if(a.en)e.energy=(e.energy||0)-a.en;if(cost)e.cash=(e.cash||0)-cost;if(a.h)e.hours=a.h;
+  if(a.lim)bump(id);
+  const chips=Player.apply(e);if(a.post)a.post();
+  if(a.say){const [sp,txt]=a.say();UI.sayEvent(sp,a.n,txt,'happy',chips);}else UI.flash=`${a.i} ${a.n} — done.`;
+  Sound.click();Game.after();}
+};
+
+/* ---------------- LocationManager ---------------- */
+const Loc={
+ unlock(l,chips){if(S.unlocked.includes(l))return;S.unlocked.push(l);const t=`NEW LOCATION UNLOCKED — ${LOCS[l].n.toUpperCase()}`;if(chips)chips.push({t,c:'gold'});else UI.toast(t,'gold');Sound.ach();},
+ check(){for(const l in LOCS)if(LOCS[l].un&&!S.unlocked.includes(l)&&LOCS[l].un())Loc.unlock(l);},
+ travelWhy(l,mode){const L=LOCS[l];if(!S.unlocked.includes(l))return 'Locked';if(l===S.loc)return 'You are here';
+  const h=mode==='walk'?2:1,arr=S.hour+h;
+  if(l!=='home'&&(arr>=L.open[1]||arr<L.open[0]))return `Closed on arrival (open ${hm(L.open[0])}–${hm(L.open[1])})`;
+  if(l!=='home'&&arr>24)return 'Too late — go home';
+  if(mode==='bike'&&(!has('bikekey')||S.energy<4))return 'Needs 4 energy';
+  if(mode==='bus'&&S.cash<30)return 'Needs ₹30';
+  return '';},
+ travel(l,mode){if(S.ev)return UI.toast('Finish the current scene first','info');const w=Loc.travelWhy(l,mode);if(w){UI.toast(w,'info');Sound.bad();return;}
+  const h=mode==='walk'?2:1;S.hour=Math.min(24,S.hour+h);
+  if(mode==='bike')S.energy=Math.max(0,S.energy-4);if(mode==='walk')S.energy=Math.max(0,S.energy-2);if(mode==='bus')S.cash-=30;
+  S.loc=l;UI.flash=`${LOCS[l].i} Arrived at ${LOCS[l].n} (${mode==='bus'?'bus, −₹30':mode==='bike'?'bike, −4 energy':'walked, −2 energy'}).`;
+  Sound.travel();UI.closeSheet();Game.after();}
+};
+
+/* ---------------- QuestManager ---------------- */
+const anyStage=n=>ROMANCE.some(c=>S.chars[c].stage>=n);
+const QUESTS=[
+ {id:'q1',main:1,t:'A New Beginning',d:'Meet the debt collector and learn the size of the family\'s problem.',req:()=>true,obj:[['Meet the debt collector',()=>!!F('met_kade')],['Learn the outstanding debt amount',()=>!!F('knows_debt')]],rw:{happy:5},rt:'+5 Happiness'},
+ {id:'q2',main:1,t:'First Income',d:'Apply for a job and complete your first paid task.',req:()=>Q('q1'),obj:[['Get hired for any job',()=>Object.keys(S.jobs).some(hired)],['Complete your first paid task',()=>S.earned>0]],rw:{cash:200,happy:5},rt:'₹200 from Mom\'s savings tin'},
+ {id:'q3',main:1,t:"The Father's Records",d:'Collect three pieces of evidence about your father\'s finances.',req:()=>Q('q1'),obj:[['Collect evidence',()=>evCount()>=3,()=>`${evCount()}/3`]],rw:{int:2,pop:2},rt:'+2 INT, +2 POP'},
+ {id:'q4',main:1,t:'Build Your Skills',d:'Improve a skill enough to unlock better opportunities.',req:()=>Q('q2'),obj:[['Reach INT 20, CHA 15 or STR 15',()=>S.int>=20||S.cha>=15||S.str>=15,()=>`INT ${S.int} · CHA ${S.cha} · STR ${S.str}`]],rw:{happy:5},rt:'Unlocks the Business District'},
+ {id:'q5',main:1,t:'A New Connection',d:'Meet Aanya, Riya, Meera or Sana and share a real conversation.',req:()=>Q('q1'),obj:[['Meet one of them',()=>anyStage(1)],['Complete a first conversation (Talk)',()=>ROMANCE.some(c=>S.chars[c].talks>=1)]],rw:{cha:1,happy:4},rt:'+1 CHA, +4 Happiness'},
+ {id:'q6',main:1,t:'Pay Down the Debt',d:'Make real repayments to KD Finance.',req:()=>Q('q1'),obj:[['Repay ₹5,000 in total',()=>S.paidTotal>=5000,()=>`${fmt(S.paidTotal)}/₹5,000`]],rw:{dep:2,happy:6},rt:'+2 Reliability, +6 Happiness'},
+ {id:'q7',main:1,t:'The Next Chapter',d:'With evidence in hand and payments flowing, Kade will make his move. Return home.',req:()=>Q('q3')&&Q('q4')&&Q('q6'),obj:[['Wait for Kade to make his move (from Day 12)',()=>S.day>=12||!!(F('truth_path')||F('deal_path'))],['Decide how to deal with Kade',()=>!!(F('truth_path')||F('deal_path'))]],rw:{happy:5},rt:'Unlocks the finale'},
+ {id:'o1',t:'Help the Café Owner',d:'Rosa needs a dependable hand for three shifts.',req:()=>hired('cafe'),obj:[['Complete 3 café shifts',()=>(S.jobs.cafe&&S.jobs.cafe.xp>=3),()=>`${S.jobs.cafe?Math.min(3,S.jobs.cafe.xp):0}/3`]],rw:{cash:600,items:{cafecard:1}},rt:'₹600 + Café Staff Card'},
+ {id:'o2',t:'A Photography Request',d:'Sana wants help with a long-exposure shot.',req:()=>C('sana').stage>=1,obj:[['Join Sana\'s photo session',()=>!!F('sana_s1_done')]],rw:{pop:3},rt:'+3 POP'},
+ {id:'o3',t:'Help a Neighbor',d:'Fix Auntie Kamala\'s gate (needs STR 12).',req:()=>!!F('met_kamala'),obj:[['Fix the gate',()=>!!F('gate_fixed')]],rw:{happy:4},rt:'+4 Happiness (plus her reward)'},
+ {id:'o4',t:'Attend a Local Event',d:'Join a Community Night at the Community Center.',req:()=>S.unlocked.includes('community'),obj:[['Attend a Community Night (evenings)',()=>!!F('attended_event')]],rw:{pop:4},rt:'+4 POP'},
+ {id:'o5',t:'Find a Missing Item',d:'Riya lost her setlist notebook in Banyan Park.',req:()=>!!F('riya_lost'),obj:[['Find the notebook',()=>has('setlist')||!!F('setlist_returned')],['Return it to Riya',()=>!!F('setlist_returned')]],rw:{happy:5,pop:1},rt:'+5 Happiness'},
+ {id:'o6',t:'Improve a Professional Skill',d:'Complete the 3-session design course.',req:()=>S.unlocked.includes('community'),obj:[['Finish 3 design sessions',()=>!!F('course_done'),()=>`${F('course_n')||0}/3`]],rw:{int:2},rt:'+2 INT, unlocks freelance work'},
+ {id:'o7',t:'A Character Favor',d:'Meera needs a reliable courier.',req:()=>C('meera').stage>=1,obj:[['Deliver Meera\'s prototype',()=>!!F('meera_favor')]],rw:{dep:2},rt:'+2 Reliability'}
+];
+const Quest={
+ active(q){return !S.quests[q.id]&&q.req();},
+ check(){for(const q of QUESTS){if(S.quests[q.id]||!q.req())continue;if(q.obj.every(o=>o[1]())){S.quests[q.id]=S.day;UI.toast(`★ QUEST COMPLETE — ${q.t.toUpperCase()}`,'gold');Player.apply(q.rw);Sound.quest();UI.burst('QUEST COMPLETE!');}}},
+ objective(){
+  if(F('truth_path')&&!S.ending)return 'FINALE (when ready): Business District, morning/afternoon → Attend the hearing. 4+ evidence voids the whole loan.';
+  if(F('deal_path')&&!S.ending)return `FINALE: Kade returns home on Day ${(F('deal_day')||0)+2}. Have ${fmt(S.debt)} ready (cash + bank).`;
+  for(const q of QUESTS){if(!q.main||!Quest.active(q))continue;const o=q.obj.find(o=>!o[1]());if(o)return `${q.t}: ${o[0]}${o[2]?' ('+o[2]()+')':''}`;}
+  return 'Explore, earn, and build your future. Kade\'s final deadline is Day 40.';}
+};
+
+/* ---------------- Achievements ---------------- */
+const ACH=[
+ ['first','First Paycheck','Earn your first income',()=>S.earned>0],
+ ['saver','Rainy Day Fund','Hold ₹5,000 in savings',()=>S.bank>=5000],
+ ['chip','Chipping Away','Repay ₹10,000 of debt',()=>S.paidTotal>=10000],
+ ['sleuth','Paper Trail','Collect all 5 pieces of evidence',()=>evCount()>=5],
+ ['boss','Own Boss','Start a business',()=>!!S.biz],
+ ['friends','Good Company','Become Friends with all four',()=>ROMANCE.every(c=>S.chars[c].stage>=2)],
+ ['heart','Something Real','Enter a committed relationship',()=>anyStage(5)],
+ ['local','Local Hero','Reach 50 Popularity',()=>S.pop>=50],
+ ['brain','Bookworm','Reach 40 INT',()=>S.int>=40],
+ ['iron','Iron Will','Reach 40 STR',()=>S.str>=40],
+ ['free','Debt Free','Reduce the debt to ₹0',()=>S.debt===0]
+];
+const Ach={check(){for(const [id,n,,f] of ACH){if(!S.ach[id]&&f()){S.ach[id]=S.day;UI.toast(`🏆 ACHIEVEMENT — ${n.toUpperCase()}`,'gold');Sound.ach();}}}};
+
+/* ---------------- Inventory ---------------- */
+const Inv={
+ use(i){const it=ITEMS[i];if(!has(i)||S.ev)return;
+  if(i==='snack'){S.inv[i]--;Player.apply({energy:15});}
+  else if(i==='tiffin'){S.inv[i]--;Player.apply({energy:30,happy:5});}
+  else if(i==='designbook'){if(S.loc!=='home')return UI.toast('Read it at home','info');if(S.hour+2>24)return UI.toast('Not enough time today','info');S.inv[i]--;Player.apply({int:3,hours:2});}
+  else if(it.t==='ev'||it.t==='key'||it.t==='quest'){UI.modal(`<h2>${it.i} ${it.n}</h2><p>${it.d}</p>${it.t==='ev'?`<p><b>Evidence ${evCount()}/5.</b> Evidence strengthens your case against KD Finance, unlocks options with Kade and decides how the finale goes.</p>`:''}<div class="mrow"><button class="btn" data-act="closeModal">Close</button></div>`);return;}
+  else if(it.t==='gift'){UI.toast('Give gifts from a character\'s menu (PEOPLE or tap them in the scene)','info');return;}
+  if(S.inv[i]<=0)delete S.inv[i];Sound.click();Game.after();}
+};
+
+/* ---------------- SaveManager ---------------- */
+const Save={
+ save(silent){if(!S)return;try{localStorage.setItem(SAVE_KEY,JSON.stringify(S));if(!silent)UI.toast('💾 GAME SAVED','info');}catch(e){if(!silent)UI.toast('Could not save (storage blocked)','neg');}},
+ exists(){try{return !!localStorage.getItem(SAVE_KEY);}catch(e){return false;}},
+ load(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return null;return Save.validate(JSON.parse(raw));}catch(e){return null;}},
+ validate(o){if(!o||typeof o!=='object')return null;const d=defaultState(typeof o.name==='string'?o.name:'Arjun');
+  for(const k in d){if(d[k]===null){if(o[k]===undefined)o[k]=null;continue;}
+   if(o[k]===undefined||o[k]===null||typeof o[k]!==typeof d[k]||Array.isArray(d[k])!==Array.isArray(o[k]))o[k]=d[k];
+   else if(typeof d[k]==='number'&&!isFinite(o[k]))o[k]=d[k];}
+  for(const c of ROMANCE)o.chars[c]=Object.assign({},d.chars[c],o.chars[c]&&typeof o.chars[c]==='object'?o.chars[c]:{});
+  for(const k of ['talk','gift','hang','jobs','misc'])if(!o.today[k]||typeof o.today[k]!=='object')o.today[k]={};
+  ['cash','bank','debt'].forEach(k=>o[k]=Math.max(0,Math.round(o[k])));
+  o.hour=clamp(o.hour,0,24);o.day=Math.max(1,Math.floor(o.day));
+  for(const i in o.inv)if(!ITEMS[i]||!(o.inv[i]>0))delete o.inv[i];
+  o.unlocked=o.unlocked.filter(l=>LOCS[l]);if(!o.unlocked.includes('home'))o.unlocked.push('home');if(!LOCS[o.loc])o.loc='home';
+  o.queue=o.queue.filter(x=>typeof x==='string'&&(EVENTS[x]||x.startsWith('@')));
+  if(o.biz&&(typeof o.biz!=='object'||!BIZ[o.biz.type]))o.biz=null;
+  S=o;if(o.ev&&!Ev.get(o.ev))o.ev=null;S=null;
+  return o;},
+ reset(){try{localStorage.removeItem(SAVE_KEY);}catch(e){}}
+};
+
+/* ---------------- UIManager ---------------- */
+const UI={
+ tab:null,phoneTab:'msgs',jobsTab:'career',questTab:'active',flash:'',sceneKey:'',
+ toast(t,c='info'){const icon={pos:'▲',neg:'▼',gold:'★',info:'ℹ'}[c]||'ℹ';const el=document.createElement('div');el.className='toast '+c;el.textContent=/^[★🏆📱💾]/u.test(t)?t:`${icon} ${t}`;const box=$('#toasts');box.appendChild(el);while(box.children.length>5)box.firstChild.remove();setTimeout(()=>el.remove(),3300);},
+ pulse(k){UI._pulse=UI._pulse||new Set();UI._pulse.add(k);},
+ burst(t){const fx=$('#scene .scene-fx');if(!fx)return;const b=document.createElement('div');b.className='burst';b.textContent=t;fx.appendChild(b);setTimeout(()=>b.remove(),1200);},
+ modal(html){const m=$('#modal');m.innerHTML=`<div class="mcard">${html}</div>`;m.classList.remove('hidden');},
+ closeModal(){$('#modal').classList.add('hidden');$('#modal').innerHTML='';},
+ confirm(text,yes){UI._yes=yes;UI.modal(`<h2>Are you sure?</h2><p>${text}</p><div class="mrow"><button class="btn coral" data-act="confirmYes">Yes</button><button class="btn alt" data-act="closeModal">Cancel</button></div>`);},
+ sayEvent(sp,title,text,ex,chips){S.ev={gen:'say',p:{sp,title,ex},res:{text,chips:chips||[],next:null,expr:ex||'happy',end:false}};UI.sceneKey='';},
+ open(t){UI.tab=t;$('#sheet').classList.remove('hidden');UI.renderSheet();UI.renderNav();},
+ closeSheet(){UI.tab=null;$('#sheet').classList.add('hidden');UI.renderNav();},
+ show(id){['menu','game','ending'].forEach(s=>$('#'+s).classList.toggle('hidden',s!==id));},
+ render(){if(!S)return;UI.renderHUD();UI.renderScene();UI.renderDlg();UI.renderNav();if(UI.tab)UI.renderSheet();},
+ renderHUD(){const p=UI._pulse||new Set(),pc=k=>p.has(k)?' flash-up':'';
+  const due=S.debt>0?`Due D${S.dueDay}: ${fmt(Math.max(0,Math.min(S.dueAmt,S.debt+S.paidWeek)-S.paidWeek))} left`:'Cleared!';
+  const st=(k,ic,lbl,tip)=>`<span class="chip${pc(k)}" title="${tip}">${ic} ${lbl} ${S[k]}</span>`;
+  $('#hud').innerHTML=`<div class="hrow">
+   <div class="card cash${pc('cash')}" title="Cash on hand. Spent on travel, food, gifts and activities."><small>💵 CASH</small><b>${fmt(S.cash)}</b></div>
+   <div class="card bank${pc('bank')}" title="Bank savings. Earns 0.2% daily interest. Transfer via PHONE → Bank."><small>🏦 BANK</small><b>${fmt(S.bank)}</b></div>
+   <div class="card debt${pc('debt')}" title="Owed to KD Finance. Weekly installment of ${fmt(S.dueAmt)}; missing it adds a ₹1,500 penalty."><small>⛓ DEBT</small><b>${fmt(S.debt)}</b><span class="sub">${due}</span></div>
+   <div class="card time" title="Each day: Morning 7–12, Afternoon 12–17, Evening 17–21, Night 21–24."><small>📅 DAY ${S.day} / 40</small><b>${PICON[P()]} ${PERIODS[P()]} ${hm(S.hour)}</b></div>
+   <button class="iconbtn" data-act="pause" title="Pause & settings" aria-label="Pause">⏸</button></div>
+   <div class="hrow">
+   <span class="chip${pc('energy')}" title="Energy 0–100. Work and travel use it; rest and sleep restore it.">⚡ ENERGY <span class="bar${S.energy<25?' low':''}"><i style="width:${S.energy}%"></i></span> ${S.energy}</span>
+   ${st('happy','😊','HAPPY','Happiness 0–100. Affects your ending.')}${st('int','🧠','INT','Intelligence: unlocks investigation, freelance, analyst jobs.')}${st('cha','💬','CHA','Charisma: interviews, conversations, social events. Never guarantees romance.')}${st('str','💪','STR','Strength: fast deliveries, depot work, physical tasks.')}${st('pop','⭐','POP','Popularity 0–100: events and business revenue.')}
+   <span class="chip" title="Reputation. Reliability ${S.dep}, Honesty ${S.hon} (range −20 to 20).">🛡 ${Player.repLabel()}</span></div>`;
+  UI._pulse=new Set();},
+ renderScene(){
+  const ev=S.ev?Ev.get(S.ev):null;const loc=(ev&&ev.bg)||S.loc,p=P();
+  let actors;
+  if(ev){actors=(ev.chars||[[ev.sp,'talk']]).map(a=>a.slice());if(!actors.some(a=>a[0]==='player'))actors.unshift(['player','neutral']);
+   if(S.ev.res){const r=S.ev.res;actors.forEach(a=>{if(a[0]===ev.sp&&ev.sp!=='player')a[1]=r.expr;else if(a[0]==='player'){const neg=r.chips.filter(c=>c.c==='neg').length,pos=r.chips.filter(c=>c.c!=='neg').length;a[1]=ev.sp==='player'?r.expr:(pos>=neg?'happy':'sad');}else if(a[1]==='talk')a[1]='neutral';});}}
+  else{actors=[['player',S.energy<20?'sad':'neutral']];const pr=Rel.present().slice(0,2).map(c=>[c,'happy']);
+   if(pr.length)actors.push(...pr);else{const n=NPC_AT[S.loc];if(n&&!(n==='mom'&&S.hour>=22)&&!(n==='hari'&&S.loc==='workplace'&&!S.unlocked.includes('workplace')))actors.push([n,'neutral']);}}
+  const pos=actors.length===1?[30]:actors.length===2?[26,70]:[20,55,82];
+  const key=loc+p+actors.map(a=>a[0]).join(',');
+  const html=actors.map((a,i)=>`<div class="actor ex-${a[1]}" style="left:${pos[i]}%">${svgChar(a[0],a[1])}<div class="nametag">${a[0]==='player'?S.name:PEOPLE[a[0]].name}</div></div>`).join('');
+  const sc=$('#scene');
+  if(key!==UI.sceneKey){sc.innerHTML=sceneSVG(loc,p)+`<div class="loc-badge">${LOCS[loc].i} ${LOCS[loc].n}<span>${PERIODS[p]}</span></div><div class="actors">${html}</div><div class="scene-fx"></div>`;sc.querySelectorAll('.actor').forEach(a=>a.classList.add('enter'));UI.sceneKey=key;}
+  else{const box=sc.querySelector('.actors');if(box&&box.dataset.h!==html){box.innerHTML=html;}}
+  const box=sc.querySelector('.actors');if(box)box.dataset.h=html;},
+ renderDlg(){const d=$('#dlg');
+  if(S.ev&&!Ev.get(S.ev))S.ev=null;
+  if(S.ev){const ev=Ev.get(S.ev),st=S.ev,sp=ev.sp||'player',nm=sp==='player'?S.name:PEOPLE[sp].name,role=sp==='player'?'(you)':PEOPLE[sp].role;
+   const txt=typeof ev.text==='function'?ev.text():ev.text;
+   let h=`<div class="dlg-in"><div class="dhead">${portrait(sp,st.res?st.res.expr:'talk')}<div>${ev.title?`<div class="evtag">EVENT: ${ev.title.toUpperCase()}</div>`:''}<div class="speaker">${nm}<small>${role}</small></div></div></div>`;
+   if(!st.res){if(ev.desc)h+=`<p class="desc">${ev.desc}</p>`;if(txt)h+=`<div class="say">${txt}</div>`;
+    h+=`<div class="choices">${ev.ch.map((c,i)=>{const why=Dec.blocked(c),t=typeof c.t==='function'?c.t():c.t;return `<button class="choice ${i?'b':'a'}" data-act="choose" data-arg="${i}" ${why?'disabled':''}><span class="k">${i?'B':'A'}</span><span>${t}${why?`<small>🔒 ${why}</small>`:(c.sub?`<small>${c.sub}</small>`:'')}</span></button>`;}).join('')}</div>`;}
+   else{h+=`<div class="result">${st.res.text}</div>${st.res.chips.length?`<div class="chips">${st.res.chips.map(c=>`<span class="echip ${c.c}">${c.t}</span>`).join('')}</div>`:''}<button class="btn" data-act="cont">${st.res.end?'See how it ends ▶':'Continue ▶'}</button>`;}
+   d.innerHTML=h+'</div>';d.scrollTop=0;return;}
+  const L=LOCS[S.loc],acts=Act.list();
+  const jobs=Object.keys(JOBS).filter(j=>JOBS[j].loc===S.loc&&(hired(j)||(!Career.reqWhy(j)&&j!=='freelance')||(j==='freelance'&&!Career.reqWhy(j))));
+  let h=`<div class="dlg-in"><div class="lochead"><b>${L.i} ${L.n}</b><span class="tag">${PERIODS[P()]} · ${hm(S.hour)} · open ${hm(L.open[0])}–${hm(L.open[1])}</span></div><p class="desc">${L.d}</p>`;
+  h+=`<div class="objective">🎯 <span><b>Objective:</b> ${Quest.objective()}</span></div>`;
+  if(UI.flash)h+=`<div class="flashmsg">${UI.flash}</div>`;
+  const pr=Rel.present();if(pr.length)h+=`<div class="people">${pr.map(c=>`<button class="pchip" data-act="char" data-arg="${c}">${portrait(c,'happy')}${PEOPLE[c].name} · ${STAGES[S.chars[c].stage]} ›</button>`).join('')}</div>`;
+  h+=`<div class="acts">`;
+  jobs.forEach(j=>{const J=JOBS[j];if(hired(j)){const w=Career.workWhy(j),lv=Career.level(j);h+=`<button class="abtn job" data-act="work" data-arg="${j}" ${w?'disabled':''}><b>${J.i} Work: ${J.n}</b><small>${fmt(J.pay+(lv-1)*J.lvl)}+ · ${J.h}h · −${J.en}⚡ · Lv ${lv}</small>${w?`<small class="why">${w}</small>`:''}</button>`;}
+   else{const cd=S.jobs[j]&&S.jobs[j].cd>S.day;h+=`<button class="abtn job" data-act="apply" data-arg="${j}" ${cd?'disabled':''}><b>${J.i} Apply: ${J.n}</b><small>${j==='freelance'?'Register as freelancer':'Interview · 1h'}</small>${cd?'<small class="why">Re-apply tomorrow</small>':''}</button>`;}});
+  acts.forEach(([id,a])=>{const w=Act.why(a),m=typeof a.m==='function'?a.m():a.m;h+=`<button class="abtn" data-act="act" data-arg="${id}" ${w?'disabled':''}><b>${a.i} ${a.n}</b><small>${m||''}${a.h?` · ${a.h}h`:''}${a.en?` · −${a.en}⚡`:''}</small>${w?`<small class="why">${w}</small>`:''}</button>`;});
+  if(S.loc!=='home')h+=`<button class="abtn" data-act="goHome"><b>🏠 Go home</b><small>${S.hour>=21?'It\'s late — head home to sleep':'Travel back to Jasmine Lane'}</small></button>`;
+  h+=`<button class="abtn" data-act="tab" data-arg="city"><b>🗺️ Travel</b><small>Open the city map</small></button></div></div>`;
+  d.innerHTML=h;},
+ renderNav(){document.querySelectorAll('.nb').forEach(b=>{b.classList.toggle('on',b.dataset.arg===UI.tab);const old=b.querySelector('.badge');if(old)old.remove();});
+  if(S){const n=S.msgs.filter(m=>!m.read).length;if(n){const b=document.querySelector('.nb[data-arg="phone"]');b.insertAdjacentHTML('beforeend',`<i class="badge">${n}</i>`);}}},
+ renderSheet(){const t=UI.tab;if(!t)return;const titles={home:'🏠 FAMILY HOME',city:'🗺️ CITY MAP',phone:'📱 PHONE',jobs:'💼 CAREER & BUSINESS',quests:'📜 QUEST JOURNAL',rel:'💞 PEOPLE',inv:'🎒 INVENTORY',shop:'🛍️ SHOP'};
+  let title=titles[t]||'',body='';
+  if(t.startsWith('char:')){const c=t.slice(5);title=`💬 ${PEOPLE[c].name.toUpperCase()}`;body=UI.charSheet(c);}else body=UI['sheet_'+t]();
+  $('#sheet').innerHTML=`<div class="shead"><h2>${title}</h2><button class="btn sm alt" data-act="closeSheet" aria-label="Close">✕ Close</button></div><div class="sbody">${body}</div>`;},
+ sheet_home(){const here=S.loc==='home';const due=Math.max(0,Math.min(S.dueAmt,S.debt+S.paidWeek)-S.paidWeek);
+  return `<div class="grid"><div class="box"><h3>🏠 Household</h3><p>${here?'You are at home.':`You are at ${LOCS[S.loc].n}.`}</p>
+  <div class="kv"><span>Daily living costs (deducted each morning)</span><b>₹120</b></div>
+  <div class="kv"><span>If you can't pay them</span><b class="neg-t">Skip meals: energy max 70</b></div>
+  <div class="kv"><span>Weekly installment</span><b>${S.debt?fmt(S.dueAmt):'—'}</b></div>
+  <div class="kv"><span>Still owed by end of Day ${S.dueDay}</span><b class="${due?'neg-t':'pos-t'}">${S.debt?fmt(due):'Debt cleared'}</b></div>
+  <div class="kv"><span>Missed installment penalty</span><b class="neg-t">+₹1,500 debt</b></div>
+  <div class="kv"><span>Kade's final deadline</span><b>Day 40</b></div>
+  <div class="row">${here?`<button class="btn" data-act="act" data-arg="sleep">🛏️ Sleep</button><button class="btn alt" data-act="act" data-arg="rest">🛋️ Rest (2h)</button>`:`<button class="btn" data-act="goHome">🏠 Go home</button>`}<button class="btn green" data-act="phoneBank">🏦 Bank & repay</button></div></div>
+  <div class="box"><h3>👩 Mom</h3><p>${F('letter_mom')?'Since reading Dad\'s letter together, Mom seems lighter.':F('sold_watch')?'Mom misses Dad\'s watch, but the bills are lighter.':'Mom worries, mostly about whether you\'re eating.'}</p><p class="meta">Talk with Mom once a day at home for +6 happiness.</p></div>
+  <div class="box"><h3>🗂️ Investigation</h3><p>Evidence collected: <b>${evCount()}/5</b></p>${EVIDENCE.map(i=>`<p class="obj ${has(i)?'ok':'no'}">${has(i)?ITEMS[i].n:'Unknown'}</p>`).join('')}<p class="meta">Hints: Dad's desk · his bicycle · Kade's notice · Sana's archive · the SwiftLine depot.</p></div></div>`;},
+ sheet_city(){return `<p class="meta" style="margin-bottom:8px">Travel takes 1 hour by bike (−4⚡) or bus (₹30), or 2 hours walking (−2⚡). Places have opening hours.</p><div class="grid">${Object.entries(LOCS).map(([id,L])=>{const un=S.unlocked.includes(id),here=id===S.loc;
+  const people=ROMANCE.filter(c=>S.chars[c].stage>0&&CHARD[c].where[id]).map(c=>`${PEOPLE[c].name} (${CHARD[c].where[id].map(x=>PERIODS[x]).join('/')})`);
+  const acts=Object.values(ACTS).filter(a=>a.loc===id).length+Object.values(JOBS).filter(j=>j.loc===id).length;
+  return `<div class="box ${un?'':'locked'} ${here?'here':''}"><h3><span class="locicon" style="background:${L.c}">${un?L.i:'🔒'}</span>${L.n}</h3><p>${un?L.d:`Locked — ${L.lock}`}</p>
+  ${un?`<p class="meta">🕒 Open ${hm(L.open[0])}–${hm(L.open[1])} · ${acts} activities${people.length?`<br>👥 ${people.join(', ')}`:''}</p>
+  <div class="row">${here?'<span class="tag ok">You are here</span>':['bike','bus','walk'].map(m=>{const w=Loc.travelWhy(id,m);return `<button class="btn sm ${m==='bike'?'blue':m==='bus'?'gold':'alt'}" data-act="travel" data-arg="${id}|${m}" ${w?`disabled title="${w}"`:''}>${m==='bike'?'🚲 Bike':m==='bus'?'🚌 ₹30':'🚶 Walk'}</button>`;}).join('')}</div>${!here&&Loc.travelWhy(id,'walk')?`<p class="meta" style="color:#b3303a">${Loc.travelWhy(id,'walk')}</p>`:''}`:'<span class="tag no">Locked</span>'}</div>`;}).join('')}</div>`;},
+ sheet_phone(){const T=UI.phoneTab;const tabs=[['msgs','💬 Messages'],['bank','🏦 Bank & Debt'],['ach','🏆 Achievements']].map(([k,n])=>`<button class="tab ${T===k?'on':''}" data-act="phoneTab" data-arg="${k}">${n}</button>`).join('');
+  let b='';
+  if(T==='msgs'){S.msgs.forEach(m=>m.read=true);setTimeout(()=>UI.renderNav(),0);
+   const tips=[];if(!hired('delivery'))tips.push('Hari is hiring delivery riders at Lantern Market.');if(!hired('cafe'))tips.push('Brew & Banter Café is hiring.');if(S.cha>=8&&!hired('shop'))tips.push('Gopal at Lantern Market needs a shop assistant (CHA 8).');if(S.str>=15&&S.unlocked.includes('workplace')&&!hired('courier'))tips.push('SwiftLine Depot is hiring a Logistics Lead (STR 15).');if(S.int>=28&&S.cha>=15&&!hired('analyst'))tips.push('Brightloop Tech is hiring a Junior Analyst.');
+   b=(tips.length?`<div class="msg"><b>📢 Job alerts</b><p>${tips.join('<br>')}</p></div>`:'')+(S.msgs.length?S.msgs.map(m=>`<div class="msg"><small>Day ${m.day}</small><b>${m.from}</b><p>${m.text}</p></div>`).join(''):'<p>No messages.</p>');}
+  else if(T==='bank'){const due=Math.max(0,Math.min(S.dueAmt,S.debt+S.paidWeek)-S.paidWeek);
+   b=`<div class="grid"><div class="box"><h3>🏦 Savings account</h3><div class="kv"><span>Cash</span><b>${fmt(S.cash)}</b></div><div class="kv"><span>Savings</span><b>${fmt(S.bank)}</b></div><p class="meta">Savings earn 0.2% interest daily and cover living costs if you run out of cash.</p>
+   <div class="row"><input id="amt" class="amount" type="number" min="1" step="1" placeholder="Amount ₹"><button class="btn sm green" data-act="bank" data-arg="dep">Deposit</button><button class="btn sm blue" data-act="bank" data-arg="wd">Withdraw</button></div>
+   <div class="row"><button class="btn sm alt" data-act="bank" data-arg="depall">Deposit all cash</button><button class="btn sm alt" data-act="bank" data-arg="wdall">Withdraw all</button></div></div>
+   <div class="box"><h3>⛓ KD Finance debt</h3><div class="kv"><span>Outstanding</span><b class="neg-t">${fmt(S.debt)}</b></div><div class="kv"><span>Installment due by end of Day ${S.dueDay}</span><b>${S.debt?fmt(due)+' left':'—'}</b></div><div class="kv"><span>Paid this week</span><b>${fmt(S.paidWeek)}</b></div><div class="kv"><span>Total repaid</span><b class="pos-t">${fmt(S.paidTotal)}</b></div><div class="kv"><span>Missed installments</span><b>${S.missed}</b></div>
+   <p class="meta">Repayments use cash only. Missing an installment adds ₹1,500.</p>
+   <div class="row">${[500,1000,2500].map(a=>`<button class="btn sm coral" data-act="repay" data-arg="${a}" ${S.cash<1||!S.debt?'disabled':''}>Pay ${fmt(a)}</button>`).join('')}<button class="btn sm" data-act="repay" data-arg="due" ${S.cash<1||!due?'disabled':''}>Pay installment</button><button class="btn sm" data-act="repay" data-arg="all" ${S.cash<1||!S.debt?'disabled':''}>Pay all cash</button></div></div></div>`;}
+  else b=`<div class="grid">${ACH.map(([id,n,d])=>`<div class="box ${S.ach[id]?'done':'locked'}"><h3>${S.ach[id]?'🏆':'🔒'} ${n}</h3><p>${d}</p>${S.ach[id]?`<span class="tag ok">Day ${S.ach[id]}</span>`:''}</div>`).join('')}</div>`;
+  return `<div class="tabs">${tabs}</div>${b}`;},
+ sheet_jobs(){const T=UI.jobsTab;const tabs=[['career','💼 Career'],['biz','📈 Business']].map(([k,n])=>`<button class="tab ${T===k?'on':''}" data-act="jobsTab" data-arg="${k}">${n}</button>`).join('');let b='';
+  if(T==='career'){b=`<div class="grid">${Object.entries(JOBS).map(([j,J])=>{const h=hired(j),lv=Career.level(j),req=Career.reqWhy(j),ww=h?Career.workWhy(j):'',xp=S.jobs[j]?S.jobs[j].xp:0;
+   const rq=Object.entries(J.req).map(([k,v])=>k==='item'?ITEMS[v].n:k==='flag'?'Design course':`${STATN[k]} ${v}`).join(', ')||'None';
+   return `<div class="box ${h?'done':''}"><h3>${J.i} ${J.n} ${h?'<span class="tag ok">Hired</span>':''}</h3><p>${J.d}</p>
+   <div class="kv"><span>Pay</span><b>${fmt(J.pay+(lv-1)*J.lvl)}${j==='freelance'?'–'+fmt(900+S.int*25):''} / task</b></div><div class="kv"><span>Energy · Time</span><b>−${J.en} · ${J.h}h</b></div><div class="kv"><span>Where · Hours</span><b>${LOCS[J.loc].n} · ${hm(J.open[0])}–${hm(J.open[1])}</b></div><div class="kv"><span>Requires</span><b>${rq}</b></div><div class="kv"><span>Level · XP</span><b>Lv ${lv} · ${xp} XP (${J.limit}/day)</b></div>
+   <div class="row">${h?(ww?`<span class="tag no">${ww}</span>`:`<button class="btn sm green" data-act="work" data-arg="${j}">Work now</button>`):(req?`<span class="tag no">${req}</span>`:(S.loc===J.loc?`<button class="btn sm blue" data-act="apply" data-arg="${j}">${J.iv?'Interview':'Join'}</button>`:`<span class="tag gold">Eligible — apply at ${LOCS[J.loc].n}</span>`))}</div></div>`;}).join('')}</div>`;}
+  else{const bz=S.biz;
+   if(!bz){b=`<p class="meta" style="margin-bottom:8px">${F('met_iyer')?'Choose a business. Startup costs are paid from cash. Profit is added every morning.':'🔒 Meet Mr. Iyer in the Business District to learn the ropes first.'}</p><div class="grid">${Object.entries(BIZ).map(([k,B])=>{const r=B.req(),fake={level:1,rep:50};return `<div class="box"><h3>${B.i} ${B.n}</h3><p>${B.d}</p><div class="kv"><span>Startup cost</span><b>${fmt(B.cost)}</b></div><div class="kv"><span>Est. daily revenue now</span><b class="pos-t">~${fmt(B.rev(fake))}</b></div><div class="kv"><span>Daily operating cost</span><b class="neg-t">${fmt(B.op(fake))}</b></div><div class="kv"><span>Est. daily profit</span><b>~${fmt(B.rev(fake)-B.op(fake))}</b></div>${r?`<span class="tag no">${r}</span>`:''}<div class="row"><button class="btn sm green" data-act="bizStart" data-arg="${k}" ${!F('met_iyer')||r||S.cash<B.cost?'disabled':''}>Start for ${fmt(B.cost)}</button></div></div>`;}).join('')}</div>`;}
+   else{const B=BIZ[bz.type],{rev,op}=Biz.calc();b=`<div class="grid"><div class="box done"><h3>${B.i} ${B.n} — Level ${bz.level}</h3>
+    <div class="kv"><span>Days operating</span><b>${bz.days}</b></div><div class="kv"><span>Business reputation</span><b>${bz.rep}/100</b></div><div class="kv"><span>Supplier</span><b>${bz.supplier}</b></div>
+    ${bz.last?`<div class="kv"><span>Last revenue</span><b class="pos-t">+${fmt(bz.last.rev)}</b></div><div class="kv"><span>Last costs</span><b class="neg-t">−${fmt(bz.last.op)}</b></div><div class="kv"><span>Last profit</span><b>${bz.last.profit>=0?'+':'−'}${fmt(bz.last.profit)}</b></div>`:''}
+    <div class="kv"><span>Forecast for tomorrow</span><b>${fmt(rev)} − ${fmt(op)} = ${rev-op>=0?'':'−'}${fmt(rev-op)}</b></div><div class="kv"><span>Lifetime profit</span><b>${bz.total>=0?'':'−'}${fmt(bz.total)}</b></div>
+    <div class="row"><button class="btn sm green" data-act="bizWork" ${bz.boost?'disabled':''}>Work the business (2h, −15⚡, +25% tomorrow)</button><button class="btn sm gold" data-act="bizUp" ${bz.level>=3?'disabled':''}>${bz.level>=3?'Max level':`Upgrade — ${fmt(5000*bz.level)}`}</button></div></div></div>`;}}
+  return `<div class="tabs">${tabs}</div>${b}`;},
+ sheet_quests(){const T=UI.questTab;const tabs=[['active','Active'],['optional','Optional'],['done','Completed']].map(([k,n])=>`<button class="tab ${T===k?'on':''}" data-act="questTab" data-arg="${k}">${n}</button>`).join('');
+  const list=QUESTS.filter(q=>T==='done'?S.quests[q.id]:T==='active'?q.main&&!S.quests[q.id]:!q.main&&!S.quests[q.id]);
+  return `<div class="tabs">${tabs}</div><div class="grid">${list.length?list.map(q=>{const act=S.quests[q.id]||q.req();return `<div class="box ${S.quests[q.id]?'done':act?'':'locked'}"><h3>${q.main?'⭐':'◆'} ${q.t}</h3><p>${q.d}</p>${q.obj.map(o=>`<p class="obj ${o[1]()?'ok':'no'}">${o[0]}${o[2]?` — ${o[2]()}`:''}</p>`).join('')}<p class="meta">Reward: ${q.rt}</p>${S.quests[q.id]?`<span class="tag ok">Completed Day ${S.quests[q.id]}</span>`:act?'<span class="tag gold">In progress</span>':'<span class="tag no">Locked — complete earlier steps</span>'}</div>`;}).join(''):'<p>Nothing here yet.</p>'}</div>`;},
+ sheet_rel(){return `<p class="meta" style="margin-bottom:8px">Each person has their own affection, trust, interest and frustration. Money and gifts can't replace trust. ${Settings.info?'(Hidden numbers are shown — toggle in Settings.)':''}</p><div class="grid">${ROMANCE.map(c=>{const R=S.chars[c],D=CHARD[c],[mood,mc]=Rel.mood(c),met=R.stage>0;
+  return `<div class="box"><div class="charcard"><div class="pic">${svgChar(c,met?(R.fru>=35?'sad':'happy'):'neutral')}</div><div style="flex:1"><h3>${PEOPLE[c].name}${met?`, ${PEOPLE[c].role.split(', ').pop()}`:''}</h3><p class="meta">${met?PEOPLE[c].role:'Not met yet'}</p><div class="stage">${[1,2,3,4,5].map(i=>`<i class="${R.stage>=i?'on':''}"></i>`).join('')}</div><p><b>${STAGES[R.stage]}</b></p><p class="mood ${mc}">${mood}</p>
+  ${met?`<p class="meta">Interests: ${R.talks?D.interests:'Talk to learn more'}<br>Values: ${R.talks>=2?D.values:'???'}<br>Find her: ${Object.entries(D.where).map(([l,ps])=>`${LOCS[l].n} (${ps.map(x=>PERIODS[x]).join('/')})`).join(', ')}</p>`:`<p class="meta">Hint: ${Object.keys(D.where).map(l=>LOCS[l].n).join(' or ')}</p>`}
+  ${Settings.info&&met?`<p class="meta">♥${R.aff} 🤝${R.trust} ✨${R.int} 😠${R.fru} · talks ${R.talks} · dates ${R.dates}</p>`:''}
+  ${met?`<div class="row"><button class="btn sm" data-act="char" data-arg="${c}" ${Rel.here(c)?'':'disabled'}>${Rel.here(c)?'Interact':'Not here now'}</button></div>`:''}</div></div></div>`;}).join('')}</div>
+  <h3 style="margin:14px 0 6px;color:var(--navy)">Other people</h3><div class="grid">${['mom','kade','rosa','hari','gopal','kamala','farah','iyer','neha'].filter(id=>({mom:1,kade:F('met_kade'),rosa:F('met_rosa')||hired('cafe'),hari:hired('delivery'),gopal:S.unlocked.includes('market'),kamala:F('met_kamala'),farah:F('met_farah'),iyer:F('met_iyer'),neha:hired('courier')||hired('analyst')||(S.jobs.courier||S.jobs.analyst)})[id]).map(id=>`<div class="box"><div class="charcard"><div class="pic" style="height:90px;width:60px">${svgChar(id,id==='kade'?'angry':'neutral')}</div><div><h3>${PEOPLE[id].name}</h3><p class="meta">${PEOPLE[id].role}</p></div></div></div>`).join('')}</div>`;},
+ charSheet(c){const R=S.chars[c],here=Rel.here(c),n=PEOPLE[c].name;if(!here)return `<p>${n} isn't here right now.</p>`;
+  const talk=S.today.talk[c]?'Already talked today':(S.hour+1>24?'Not enough time':(S.energy<3?'Too tired':'')),
+   hang=R.stage<2?'Requires Friend stage':(S.today.hang[c]?'Already hung out today':(S.cash<150?'Needs ₹150':(S.energy<10?'Needs 10 energy':(S.hour+2>24?'Not enough time':'')))),
+   date=R.stage<3?'Requires Romantic Interest stage':(S.cash<400?'Needs ₹400':(S.hour+3>24?'Not enough time':''));
+  const gifts=Object.keys(S.inv).filter(i=>ITEMS[i].t==='gift');
+  return `<div class="grid"><div class="box"><div class="charcard"><div class="pic">${svgChar(c,'happy')}</div><div><h3>${n}</h3><p class="meta">${PEOPLE[c].role}</p><p><b>${STAGES[R.stage]}</b></p><p class="mood ${Rel.mood(c)[1]}">${Rel.mood(c)[0]}</p></div></div></div>
+  <div class="box"><h3>Interactions</h3>
+  <div class="row"><button class="btn sm blue" data-act="talk" data-arg="${c}" ${talk?'disabled':''}>💬 Talk (1h)</button>${talk?`<span class="tag no">${talk}</span>`:''}</div>
+  <div class="row"><button class="btn sm green" data-act="hang" data-arg="${c}" ${hang?'disabled':''}>🎈 Hang out (₹150, 2h)</button>${hang?`<span class="tag no">${hang}</span>`:''}</div>
+  <div class="row"><button class="btn sm coral" data-act="date" data-arg="${c}" ${date?'disabled':''}>💕 Ask on a date (₹400, 3h)</button>${date?`<span class="tag no">${date}</span>`:''}</div>
+  <p class="meta" style="margin-top:6px">She may say no. Respecting a "no" builds trust.</p></div>
+  <div class="box"><h3>🎁 Give a gift ${S.today.gift[c]?'<span class="tag no">Already today</span>':''}</h3>${gifts.length?`<div class="row">${gifts.map(i=>`<button class="btn sm alt" data-act="gift" data-arg="${c}|${i}" ${S.today.gift[c]?'disabled':''}>${ITEMS[i].i} ${ITEMS[i].n}</button>`).join('')}</div>`:'<p class="meta">No gifts in your bag. Buy some at Lantern Market or Inkwell Books.</p>'}<p class="meta">What she loves depends on her interests — not the price.</p></div></div>`;},
+ sheet_inv(){const groups=[['key','Key items'],['use','Consumables'],['gift','Gifts'],['ev','Evidence'],['quest','Quest items']];
+  return groups.map(([t,n])=>{const it=Object.keys(S.inv).filter(i=>ITEMS[i].t===t);if(!it.length)return '';return `<h3 style="margin:8px 0;color:var(--navy)">${n}</h3><div class="grid">${it.map(i=>{const I=ITEMS[i];return `<div class="box"><h3>${I.i} ${I.n} ${S.inv[i]>1?`<span class="tag">×${S.inv[i]}</span>`:''}</h3><p>${I.d}</p><div class="row">${t==='use'?`<button class="btn sm green" data-act="use" data-arg="${i}">Use</button>`:t==='gift'?'<span class="tag gold">Give from a character\'s menu</span>':`<button class="btn sm alt" data-act="use" data-arg="${i}">Examine</button>`}</div></div>`;}).join('')}</div>`;}).join('')||'<p>Your bag is empty.</p>';},
+ sheet_shop(){const items=Object.entries(ITEMS).filter(([,I])=>I.price&&I.shop===S.loc);
+  if(!items.length)return `<p>There's nothing to buy here. Shops: Lantern Market and Inkwell Books.</p>`;
+  return `<p class="meta" style="margin-bottom:8px">Cash: <b>${fmt(S.cash)}</b></p><div class="grid">${items.map(([k,I])=>`<div class="box"><h3>${I.i} ${I.n} ${has(k)?`<span class="tag">owned ×${S.inv[k]}</span>`:''}</h3><p>${I.d}</p><div class="row"><button class="btn sm green" data-act="buy" data-arg="${k}" ${S.cash<I.price||(I.t==='key'&&has(k))?'disabled':''}>Buy ${fmt(I.price)}</button></div></div>`).join('')}</div>`;}
+};
+
+/* ---------------- Game ---------------- */
+const Game={
+ newGame(name){S=defaultState(name);UI.tab=null;UI.flash='';UI.sceneKey='';$('#sheet').classList.add('hidden');Ev.next();UI.show('game');Save.save(true);UI.render();},
+ continue(){const s=Save.load();if(!s){UI.toast('No valid save found','neg');return;}S=s;UI.tab=null;UI.sceneKey='';UI.flash='';
+  if(S.ending){Game.showEnding();return;}UI.show('game');$('#sheet').classList.add('hidden');Game.after();UI.toast('Welcome back!','info');},
+ after(skipScan){
+  Quest.check();Loc.check();Ach.check();
+  if(!S.ev&&!skipScan){if(!Ev.next())Ev.scan();}
+  if(!S.ev&&S.hour>=24&&!S.ending){UI.toast('Midnight — you head home and collapse into bed','info');S.loc='home';Time.sleep();return;}
+  Save.save(true);UI.render();},
+ finish(){
+  const n=evCount(),stable=!!S.biz||Object.keys(S.jobs).some(j=>hired(j)&&(j==='analyst'||j==='courier'||(j!=='delivery'&&Career.level(j)>=3)));
+  let k;if(F('exposed'))k='B';else if(S.debt===0&&stable)k='A';else if(S.debt<=15000&&S.happy>=40&&S.int+S.cha+S.str>=55)k='C';else k='D';
+  const bonus=k==='B'&&S.debt===0&&stable?' — and Financial Independence':'';
+  S.ending={k,day:S.day,bonus};S.ev=null;Save.save(true);Sound.ach();Game.showEnding();},
+ showEnding(){const k=S.ending.k;
+  const T={A:['Ending A — Financial Independence','You paid every rupee yourself. KD Finance is a bad memory, and your work finally pays more than your bills. Mom has started planting tomatoes again.'],
+   B:['Ending B — The Truth Revealed','The forged loan unravelled in a 14th-floor hearing room. Your father\'s name is cleared, and Kade\'s sedan is now evidence in someone else\'s case.'],
+   C:['Ending C — A New Beginning','The debt isn\'t entirely gone, but it no longer owns you. You\'ve grown sharper, stronger, and steadier — and the future finally feels like yours to choose.'],
+   D:['Ending D — A Complicated Future','The story with Kade is over, but its echoes aren\'t. Money is tight and questions remain. Still — you\'re standing, and second chances can come more than once.']}[k];
+  const relLine=c=>{const R=S.chars[c],n=PEOPLE[c].name;return ['You never really met '+n+'.',`${n} remembers you as a friendly face.`,`${n} became a good friend who still sends you terrible memes.`,`You and ${n} never quite said it out loud — but the door is open.`,`You and ${n} are dating, figuring things out one evening at a time.`,`${n} is your partner. Whatever comes next, you face it together.`][R.stage];};
+  const jobs=Object.keys(S.jobs).filter(hired).map(j=>`${JOBS[j].n} (Lv ${Career.level(j)})`);
+  const qd=Object.keys(S.quests).length;
+  $('#ending').innerHTML=`<div class="endcard"><p class="evtag">THE END · DAY ${S.ending.day}</p><h1>${T[0]}${S.ending.bonus||''}</h1><div class="lineup">${svgChar('player','happy')}${ROMANCE.filter(c=>S.chars[c].stage>=2).map(c=>svgChar(c,'happy')).join('')}${svgChar('mom',k==='D'?'sad':'happy')}</div>
+  <div class="box"><h3>📖 Epilogue</h3><p>${T[1]}</p><p>${F('kept_watch')?'Dad\'s watch still ticks on your wrist.':F('sold_watch')?'Someday you plan to buy Dad\'s watch back from Gopal.':''} ${F('letter_mom')?'Mom keeps Dad\'s letter in her prayer box.':''} ${S.biz?`Your ${BIZ[S.biz.type].n} keeps growing.`:''}</p></div>
+  <div class="grid" style="margin-top:12px"><div class="box"><h3>💰 Finances</h3><div class="kv"><span>Cash</span><b>${fmt(S.cash)}</b></div><div class="kv"><span>Savings</span><b>${fmt(S.bank)}</b></div><div class="kv"><span>Remaining debt</span><b class="${S.debt?'neg-t':'pos-t'}">${fmt(S.debt)}</b></div><div class="kv"><span>Total repaid</span><b>${fmt(S.paidTotal)}</b></div><div class="kv"><span>Lifetime earnings</span><b>${fmt(S.earned)}</b></div></div>
+  <div class="box"><h3>💼 Career & business</h3><p>${jobs.length?jobs.join(', '):'No steady job'}</p><p>${S.biz?`${BIZ[S.biz.type].n}, Level ${S.biz.level}, lifetime profit ${S.biz.total<0?'−':''}${fmt(S.biz.total)}`:'No business'}</p></div>
+  <div class="box"><h3>🧠 Skills</h3><div class="kv"><span>Intelligence</span><b>${S.int}</b></div><div class="kv"><span>Charisma</span><b>${S.cha}</b></div><div class="kv"><span>Strength</span><b>${S.str}</b></div><div class="kv"><span>Popularity</span><b>${S.pop}</b></div><div class="kv"><span>Happiness</span><b>${S.happy}</b></div><div class="kv"><span>Reputation</span><b>${Player.repLabel()}</b></div></div>
+  <div class="box"><h3>📜 Quests & evidence</h3><p>${qd}/${QUESTS.length} quests completed</p><p>${evCount()}/5 pieces of evidence held</p><p>${Object.keys(S.ach).length}/${ACH.length} achievements</p></div></div>
+  <div class="box"><h3>💞 Relationships</h3>${ROMANCE.map(c=>`<p>• ${relLine(c)}</p>`).join('')}</div>
+  <div class="box"><h3>⚖️ Key decisions</h3>${S.decisions.length?S.decisions.slice(-12).map(d=>`<p>• ${d}</p>`).join(''):'<p>None recorded.</p>'}</div>
+  <div class="row" style="margin:16px 0 30px"><button class="mbtn primary" data-act="newGame">▶ New Game</button><button class="mbtn" data-act="mainmenu">Main Menu</button></div></div>`;
+  UI.show('ending');}
+};
+
+/* ---------------- Input (event delegation) ---------------- */
+const ACT={
+ newGame(){const go=()=>UI.modal(`<h2>New Game</h2><p>Your character's name (21 years old):</p><input id="pname" class="amount" style="width:100%" maxlength="16" value="Arjun"><div class="mrow"><button class="btn coral" data-act="startGame">Begin</button><button class="btn alt" data-act="closeModal">Cancel</button></div>`);
+  if(Save.exists())UI.confirm('Starting a new game will overwrite your saved progress.',go);else go();},
+ startGame(){const n=($('#pname').value||'').trim().replace(/[<>&"]/g,'').slice(0,16)||'Arjun';UI.closeModal();Game.newGame(n);},
+ continue(){Game.continue();},
+ settings(){ACT.pause(true);},
+ howto(){UI.modal(`<h2>❓ How to Play</h2><ul>
+  <li><b>Goal:</b> deal with your late father's ₹50,000 debt to KD Finance, uncover the truth, and build a future before Kade's Day 40 deadline.</li>
+  <li><b>Time:</b> each action costs hours. Sleep at home to start a new day (₹120 living costs are deducted each morning).</li>
+  <li><b>Money:</b> you start with ₹0. Earn it from jobs (JOBS), then repay debt or save via PHONE → Bank. Pay the weekly installment or face a ₹1,500 penalty.</li>
+  <li><b>Choices:</b> events offer two options (A/B or keys 1/2). Some need stats, items or reputation. Consequences may show up later.</li>
+  <li><b>People:</b> meet Aanya, Riya, Meera and Sana around the city. Talk daily, learn what they value, and respect their boundaries. Romance is optional.</li>
+  <li><b>Investigation:</b> find evidence (desk, bicycle, depot, friends). Evidence decides the finale.</li>
+  <li><b>Endings:</b> Financial Independence, The Truth Revealed, A New Beginning, or A Complicated Future.</li></ul><div class="mrow"><button class="btn" data-act="closeModal">Got it</button></div>`);},
+ pause(fromMenu){UI.modal(`<h2>${fromMenu===true?'⚙ Settings':'⏸ Paused'}</h2>
+  ${fromMenu===true?'':`<div class="mrow"><button class="btn green" data-act="closeModal">▶ Resume</button><button class="btn blue" data-act="save">💾 Save</button><button class="btn coral" data-act="restart">↺ Restart</button><button class="btn alt" data-act="mainmenu">Main Menu</button></div>`}
+  <h3 style="margin-top:14px">Sound</h3><div class="mrow"><button class="btn sm ${Settings.sound?'green':'alt'}" data-act="sound">${Settings.sound?'🔊 Sound ON':'🔇 Sound OFF'}</button></div>
+  <h3 style="margin-top:10px">Text size</h3><div class="mrow">${['s','m','l'].map(k=>`<button class="btn sm ${Settings.text===k?'':'alt'}" data-act="text" data-arg="${k}">${{s:'Small',m:'Medium',l:'Large'}[k]}</button>`).join('')}</div>
+  <h3 style="margin-top:10px">Game information view</h3><div class="mrow"><button class="btn sm ${Settings.info?'':'alt'}" data-act="info">${Settings.info?'Showing hidden relationship numbers':'Hidden relationship numbers OFF'}</button></div>
+  <h3 style="margin-top:10px">Saved data</h3><div class="mrow"><button class="btn sm coral" data-act="resetSave">🗑 Reset saved game</button></div>
+  ${fromMenu===true?'<div class="mrow"><button class="btn" data-act="closeModal">Close</button></div>':''}`);},
+ closeModal(){UI.closeModal();if(S&&!$('#game').classList.contains('hidden'))UI.render();},
+ confirmYes(){const f=UI._yes;UI._yes=null;UI.closeModal();if(f)f();},
+ save(){Save.save();},
+ restart(){UI.confirm('Restart from Day 1? Your current save will be replaced.',()=>ACT.newGame());},
+ mainmenu(){if(S&&!S.ending)Save.save(true);UI.closeModal();UI.closeSheet();$('#contBtn').disabled=!Save.exists();UI.show('menu');},
+ resetSave(){UI.confirm('Delete your saved progress permanently?',()=>{Save.reset();$('#contBtn').disabled=true;UI.toast('Save deleted','info');if(S&&!$('#game').classList.contains('hidden')){S=null;UI.show('menu');}});},
+ sound(){Settings.sound=!Settings.sound;Settings.save();ACT.pause(!S||$('#game').classList.contains('hidden'));},
+ text(k){Settings.text=k;Settings.save();Settings.apply();ACT.pause(!S||$('#game').classList.contains('hidden'));},
+ info(){Settings.info=!Settings.info;Settings.save();ACT.pause(!S||$('#game').classList.contains('hidden'));},
+ tab(t){if(S.ev&&t==='city'){UI.toast('Finish the current scene first','info');return;}if(UI.tab===t)UI.closeSheet();else UI.open(t);Sound.click();},
+ closeSheet(){UI.closeSheet();UI.render();},
+ choose(i){Dec.choose(+i);},
+ cont(){Dec.cont();},
+ act(id){if(S.ev)return UI.toast('Finish the current scene first','info');if(UI.tab&&!['shopbooks','shop','bizpanel'].includes(id))UI.closeSheet();Act.run(id);},
+ goHome(){if(S.ev)return;const mode=has('bikekey')&&S.energy>=4?'bike':'walk';if(S.hour>=22){S.hour=Math.min(24,S.hour+1);S.loc='home';UI.flash='🏠 You made it home.';UI.closeSheet();Game.after();}else Loc.travel('home',mode);},
+ travel(a){const [l,m]=a.split('|');Loc.travel(l,m);},
+ work(j){if(S.ev)return UI.toast('Finish the current scene first','info');UI.closeSheet();Career.work(j);},
+ apply(j){if(S.ev)return UI.toast('Finish the current scene first','info');Career.apply(j);},
+ char(c){UI.open('char:'+c);},
+ talk(c){if(S.ev||S.today.talk[c]||!Rel.here(c))return;const R=C(c),D=CHARD[c];Ev.start({gen:'talk',p:{c,f:(S.day+R.talks)%2,g:(S.day+R.talks)%D.good.length,o:(S.day+R.talks)%D.open.length}});UI.closeSheet();Game.after(true);},
+ hang(c){if(S.ev||!Rel.here(c)||C(c).stage<2||S.today.hang[c]||S.cash<150)return;Ev.start({gen:'hang',p:{c,f:S.day%2}});UI.closeSheet();Game.after(true);},
+ date(c){if(S.ev||!Rel.here(c)||C(c).stage<3||S.cash<400)return;const r=Rel.dateBlock(c);Ev.start(r?{gen:'decline',p:{c,r}}:{gen:'date',p:{c,f:S.day%2}});UI.closeSheet();Game.after(true);},
+ gift(a){const [c,i]=a.split('|');if(S.ev||!Rel.here(c))return;Rel.gift(c,i);UI.closeSheet();Game.after(true);},
+ buy(i){Eco.buy(i);},
+ use(i){Inv.use(i);},
+ phoneTab(k){UI.phoneTab=k;UI.renderSheet();},
+ jobsTab(k){UI.jobsTab=k;UI.renderSheet();},
+ questTab(k){UI.questTab=k;UI.renderSheet();},
+ phoneBank(){UI.phoneTab='bank';UI.open('phone');},
+ bank(op){const v=Math.floor(+(($('#amt')||{}).value||0));
+  if(op==='depall')return Eco.deposit(S.cash);if(op==='wdall')return Eco.withdraw(S.bank);
+  if(!(v>0))return UI.toast('Enter an amount first','info');if(op==='dep')Eco.deposit(v);else Eco.withdraw(v);},
+ repay(a){const due=Math.max(0,Math.min(S.dueAmt,S.debt+S.paidWeek)-S.paidWeek);Eco.repay(a==='all'?S.cash:a==='due'?due:+a);},
+ bizStart(t){Biz.start(t);},bizUp(){Biz.upgrade();},bizWork(){Biz.work();}
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b||b.disabled)return;const f=ACT[b.dataset.act];if(!f)return;e.preventDefault();
+ try{f(b.dataset.arg);}catch(err){console.error(err);UI.toast('Something went wrong — progress is safe','neg');}});
+document.addEventListener('keydown',e=>{if(!S||$('#game').classList.contains('hidden')||!$('#modal').classList.contains('hidden'))return;
+ if(e.target.tagName==='INPUT')return;
+ if(S.ev&&!S.ev.res&&['1','2','a','b','A','B'].includes(e.key))Dec.choose(['1','a','A'].includes(e.key)?0:1);
+ else if(S.ev&&S.ev.res&&(e.key==='Enter'||e.key===' ')){e.preventDefault();Dec.cont();}
+ else if(e.key==='Escape'&&UI.tab)ACT.closeSheet();});
+
+/* ---------------- Settings & boot ---------------- */
+Settings.save=function(){try{localStorage.setItem(SET_KEY,JSON.stringify({sound:Settings.sound,text:Settings.text,info:Settings.info}));}catch(e){}};
+Settings.apply=function(){document.documentElement.style.setProperty('--fs',{s:'14px',m:'16px',l:'18.5px'}[Settings.text]||'16px');};
+try{const st=JSON.parse(localStorage.getItem(SET_KEY)||'{}');if(typeof st.sound==='boolean')Settings.sound=st.sound;if(['s','m','l'].includes(st.text))Settings.text=st.text;if(typeof st.info==='boolean')Settings.info=st.info;}catch(e){}
+Settings.apply();
+$('#lineup').innerHTML=['aanya','riya','player','meera','sana'].map(c=>svgChar(c,'happy')).join('');
+$('#contBtn').disabled=!Save.exists();
+</script>
+</body>
+</html>
